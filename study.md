@@ -60,3 +60,8 @@ innerDiffNode
 - 如果是字符串或者数字，在diff中貌似没有比较；直接修改。所以回去之后要对dom的操作性能做更深入的学习
 - diff有哪些调用方式？没有dom的时候，生成一个dom元素；有dom的，比较之后之后返回正确的dom，然后parent将其append
 - react的比较数组的方式和莱文斯坦算法比为什么性能更优？
+
+
+###待做
+
+- this.props为undefined，要学习它的renderComponent方法

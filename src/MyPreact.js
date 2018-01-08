@@ -3,6 +3,12 @@ const EMPTY_CHILDREN = []
 
 const components = {}
 
+const defer = typeof Promise === 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout
+
+let mounts = []
+
+let renderItems = []
+
 class VNode{}
 
 // rest和attribute.children
@@ -205,8 +211,16 @@ function buildComponentFromVNode(dom, vnode, context){
     var vnodename = vnode.nodeName,
         c = null,
         props = getNodeProps(vnode);
-    
+
     c = createComponent(vnodename, props, context);
+
+    const rendered = renderComponent(c, props, context)
+
+    return idiff(dom, rendered)
+}
+
+function renderComponent(c, props, context){
+    
     // 为实例设置props
     if(!c.base){
         if(c.componentWillMount) c.componentWillMount()
@@ -217,7 +231,9 @@ function buildComponentFromVNode(dom, vnode, context){
     c.props = props
     // 调用render方法，生成虚拟dom节点的集合
     let rendered = c.render()
-    return idiff(dom, rendered)
+    mounts.push(c)
+
+    return rendered
 }
 
 function eventProxy(e){
@@ -287,7 +303,16 @@ function diff(dom, vnode, parent){
     if(parent && ret.parentNode !== parent){
         parent.appendChild(ret)
     }
+    flushMounts()
     return ret
+}
+
+function flushMounts(){
+    var c;
+    while(c = mounts.shift()){
+        c.componentDidMount && c.componentDidMount()
+    }
+    mounts = []
 }
 
 // 比较dom和vnode的不同，返回一个期望的dom节点
@@ -348,7 +373,17 @@ function createNode(nodeName) {
 }
 
 function enqueueRender(component){
-    typeof Promise === 'function' ? Promise.resolve().then(component.render) : setTimeout(component.render)
+    renderItems.push(component)
+    defer(rerender)
+}
+
+function rerender(){
+    let c = null
+    let list = renderItems
+    renderItems = []
+    while(c = list.pop()){
+        renderComponent(c)
+    }
 }
 
 function Component(props, context){

@@ -1,9 +1,9 @@
 /* eslint-disable */
 import './style';
 // import App from './components/app';
-import { render, Component, h } from 'preact'
+// import { render, Component, h } from 'preact'
 import { setTimeout } from 'timers';
-// import { render, h, Component } from './MyPreact'
+import { render, h, Component } from './MyPreact'
 // import { setTimeout } from 'timers';
 
 // class MyApp extends Component{
@@ -74,18 +74,22 @@ class MySpan extends Component{
 
 class MyApp extends Component{
   state = {
-    number: 143243
+    number: '143243'
   }
 
   componentDidMount(){
     setTimeout( () => {
       this.setState({
-        number: 20
+        number: '200434'
+      }, () => {
+        console.log('number', this.state.number)
       })
     }, 2000)
   }
 
   render(){
+    console.log('this', this.props)
+    debugger
     const { title } = this.props
     const { number } = this.state
     // if(number > 20){
@@ -98,7 +102,7 @@ class MyApp extends Component{
     //   )
     // }
     return (
-      <span>{title}</span>
+      <MySpan>{number}</MySpan>
     )
 
   }
@@ -108,7 +112,7 @@ let title = '64544'
 
 setTimeout(() => {
   title = '53453253'
-})
+}, 3000)
 
 render((
   <MyApp title={title} />

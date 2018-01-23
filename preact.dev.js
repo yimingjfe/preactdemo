@@ -5,21 +5,21 @@
 	function VNode() {}
 
 	/** Global options
-   *	@public
-   *	@namespace options {Object}
-   */
+	 *	@public
+	 *	@namespace options {Object}
+	 */
 	let options = {
 
 		/** If `true`, `prop` changes trigger synchronous component updates.
-    *	@name syncComponentUpdates
-    *	@type Boolean
-    *	@default true
-    */
+		*	@name syncComponentUpdates
+		*	@type Boolean
+		*	@default true
+		*/
 		//syncComponentUpdates: true,
 
 		/** Processes all created VNodes.
-    *	@param {VNode} vnode	A newly-created VNode to normalize/process
-    */
+		*	@param {VNode} vnode	A newly-created VNode to normalize/process
+		*/
 		//vnode(vnode) { }
 
 		/** Hook invoked after a component is mounted. */
@@ -37,33 +37,33 @@
 	let EMPTY_CHILDREN = [];
 
 	/**
-   * JSX/hyperscript reviver.
-   * @see http://jasonformat.com/wtf-is-jsx
-   * Benchmarks: https://esbench.com/bench/57ee8f8e330ab09900a1a1a0
-   *
-   * Note: this is exported as both `h()` and `createElement()` for compatibility reasons.
-   *
-   * Creates a VNode (virtual DOM element). A tree of VNodes can be used as a lightweight representation
-   * of the structure of a DOM tree. This structure can be realized by recursively comparing it against
-   * the current _actual_ DOM structure, and applying only the differences.
-   *
-   * `h()`/`createElement()` accepts an element name, a list of attributes/props,
-   * and optionally children to append to the element.
-   *
-   * @example The following DOM tree
-   *
-   * `<div id="foo" name="bar">Hello!</div>`
-   *
-   * can be constructed using this function as:
-   *
-   * `h('div', { id: 'foo', name : 'bar' }, 'Hello!');`
-   *
-   * @param {string} nodeName	An element name. Ex: `div`, `a`, `span`, etc.
-   * @param {Object} attributes	Any attributes/props to set on the created element.
-   * @param rest			Additional arguments are taken to be children to append. Can be infinitely nested Arrays.
-   *
-   * @public
-   */
+	 * JSX/hyperscript reviver.
+	 * @see http://jasonformat.com/wtf-is-jsx
+	 * Benchmarks: https://esbench.com/bench/57ee8f8e330ab09900a1a1a0
+	 *
+	 * Note: this is exported as both `h()` and `createElement()` for compatibility reasons.
+	 *
+	 * Creates a VNode (virtual DOM element). A tree of VNodes can be used as a lightweight representation
+	 * of the structure of a DOM tree. This structure can be realized by recursively comparing it against
+	 * the current _actual_ DOM structure, and applying only the differences.
+	 *
+	 * `h()`/`createElement()` accepts an element name, a list of attributes/props,
+	 * and optionally children to append to the element.
+	 *
+	 * @example The following DOM tree
+	 *
+	 * `<div id="foo" name="bar">Hello!</div>`
+	 *
+	 * can be constructed using this function as:
+	 *
+	 * `h('div', { id: 'foo', name : 'bar' }, 'Hello!');`
+	 *
+	 * @param {string} nodeName	An element name. Ex: `div`, `a`, `span`, etc.
+	 * @param {Object} attributes	Any attributes/props to set on the created element.
+	 * @param rest			Additional arguments are taken to be children to append. Can be infinitely nested Arrays.
+	 *
+	 * @public
+	 */
 	function h(nodeName, attributes) {
 		let children = EMPTY_CHILDREN,
 			lastSimple,
@@ -119,12 +119,12 @@
 	}
 
 	/**
-   *  Copy all properties from `props` onto `obj`.
-   *  @param {Object} obj		Object onto which properties should be copied.
-   *  @param {Object} props	Object from which to copy properties.
-   *  @returns obj
-   *  @private
-   */
+	 *  Copy all properties from `props` onto `obj`.
+	 *  @param {Object} obj		Object onto which properties should be copied.
+	 *  @param {Object} props	Object from which to copy properties.
+	 *  @returns obj
+	 *  @private
+	 */
 	function extend(obj, props) {
 		for (let i in props) {
 			obj[i] = props[i];
@@ -132,20 +132,20 @@
 	}
 
 	/**
-   * Call a function asynchronously, as soon as possible. Makes
-   * use of HTML Promise to schedule the callback if available,
-   * otherwise falling back to `setTimeout` (mainly for IE<11).
-   *
-   * @param {Function} callback
-   */
+	 * Call a function asynchronously, as soon as possible. Makes
+	 * use of HTML Promise to schedule the callback if available,
+	 * otherwise falling back to `setTimeout` (mainly for IE<11).
+	 *
+	 * @param {Function} callback
+	 */
 	let defer = typeof Promise === 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 
 	/**
-   * Clones the given VNode, optionally adding attributes/props and replacing its children.
-   * @param {VNode} vnode		The virutal DOM element to clone
-   * @param {Object} props	Attributes/props to add when cloning
-   * @param {VNode} rest		Any additional arguments will be used as replacement children.
-   */
+	 * Clones the given VNode, optionally adding attributes/props and replacing its children.
+	 * @param {VNode} vnode		The virutal DOM element to clone
+	 * @param {Object} props	Attributes/props to add when cloning
+	 * @param {VNode} rest		Any additional arguments will be used as replacement children.
+	 */
 	function cloneElement(vnode, props) {
 		return h(vnode.nodeName, extend(extend({}, vnode.attributes), props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.children);
 	}
@@ -174,13 +174,13 @@
 	}
 
 	/**
-   * Check if two nodes are equivalent.
-   *
-   * @param {Node} node			DOM Node to compare
-   * @param {VNode} vnode			Virtual DOM node to compare
-   * @param {boolean} [hyrdating=false]	If true, ignores component constructors when comparing.
-   * @private
-   */
+	 * Check if two nodes are equivalent.
+	 *
+	 * @param {Node} node			DOM Node to compare
+	 * @param {VNode} vnode			Virtual DOM node to compare
+	 * @param {boolean} [hyrdating=false]	If true, ignores component constructors when comparing.
+	 * @private
+	 */
 	// 如果虚拟dom是一个string或number，真实dom是一个文本节点；则返回true
 	function isSameNodeType(node, vnode, hydrating) {
 		if (typeof vnode === 'string' || typeof vnode === 'number') {
@@ -193,23 +193,23 @@
 	}
 
 	/**
-   * Check if an Element has a given nodeName, case-insensitively.
-   *
-   * @param {Element} node	A DOM Element to inspect the name of.
-   * @param {String} nodeName	Unnormalized name to compare against.
-   */
+	 * Check if an Element has a given nodeName, case-insensitively.
+	 *
+	 * @param {Element} node	A DOM Element to inspect the name of.
+	 * @param {String} nodeName	Unnormalized name to compare against.
+	 */
 	function isNamedNode(node, nodeName) {
 		return node.normalizedNodeName === nodeName || node.nodeName.toLowerCase() === nodeName.toLowerCase();
 	}
 
 	/**
-   * Reconstruct Component-style `props` from a VNode.
-   * Ensures default/fallback values from `defaultProps`:
-   * Own-properties of `defaultProps` not present in `vnode.attributes` are added.
-   *
-   * @param {VNode} vnode
-   * @returns {Object} props
-   */
+	 * Reconstruct Component-style `props` from a VNode.
+	 * Ensures default/fallback values from `defaultProps`:
+	 * Own-properties of `defaultProps` not present in `vnode.attributes` are added.
+	 *
+	 * @param {VNode} vnode
+	 * @returns {Object} props
+	 */
 	// 根据组件的props和默认的props；拿到props
 	function getNodeProps(vnode) {
 		let props = extend({}, vnode.attributes);
@@ -228,10 +228,10 @@
 	}
 
 	/** Create an element with the given nodeName.
-   *	@param {String} nodeName
-   *	@param {Boolean} [isSvg=false]	If `true`, creates an element within the SVG namespace.
-   *	@returns {Element} node
-   */
+	 *	@param {String} nodeName
+	 *	@param {Boolean} [isSvg=false]	If `true`, creates an element within the SVG namespace.
+	 *	@returns {Element} node
+	 */
 	function createNode(nodeName, isSvg) {
 		let node = isSvg ? document.createElementNS('http://www.w3.org/2000/svg', nodeName) : document.createElement(nodeName);
 		node.normalizedNodeName = nodeName;
@@ -239,22 +239,22 @@
 	}
 
 	/** Remove a child node from its parent if attached.
-   *	@param {Element} node		The node to remove
-   */
+	 *	@param {Element} node		The node to remove
+	 */
 	function removeNode(node) { // 没有验证node是否为空，react里面不知道是否验证了
 		let parentNode = node.parentNode;
 		if (parentNode) parentNode.removeChild(node);
 	}
 
 	/** Set a named attribute on the given Node, with special behavior for some names and event handlers.
-   *	If `value` is `null`, the attribute/handler will be removed.
-   *	@param {Element} node	An element to mutate
-   *	@param {string} name	The name/key to set, such as an event or attribute name
-   *	@param {any} old	The last value that was set for this name/node pair
-   *	@param {any} value	An attribute value, such as a function to be used as an event handler
-   *	@param {Boolean} isSvg	Are we currently diffing inside an svg?
-   *	@private
-   */
+	 *	If `value` is `null`, the attribute/handler will be removed.
+	 *	@param {Element} node	An element to mutate
+	 *	@param {string} name	The name/key to set, such as an event or attribute name
+	 *	@param {any} old	The last value that was set for this name/node pair
+	 *	@param {any} value	An attribute value, such as a function to be used as an event handler
+	 *	@param {Boolean} isSvg	Are we currently diffing inside an svg?
+	 *	@private
+	 */
 	function setAccessor(node, name, old, value, isSvg) {
 		if (name === 'className') name = 'class';
 
@@ -313,8 +313,8 @@
 	}
 
 	/** Attempt to set a DOM property to the given value.
-   *	IE & FF throw for certain property-value combinations.
-   */
+	 *	IE & FF throw for certain property-value combinations.
+	 */
 	function setProperty(node, name, value) {
 		try {
 			node[name] = value;
@@ -323,8 +323,8 @@
 	}
 
 	/** Proxy an event to hooked event handlers
-   *	@private
-   */
+	 *	@private
+	 */
 	function eventProxy(e) {
 		return this._listeners[e.type](options.event && options.event(e) || e);
 	}
@@ -351,11 +351,11 @@
 	}
 
 	/** Apply differences in a given vnode (and it's deep children) to a real DOM Node.
-   *	@param {Element} [dom=null]		A DOM node to mutate into the shape of the `vnode`
-   *	@param {VNode} vnode			A VNode (with descendants forming a tree) representing the desired DOM structure
-   *	@returns {Element} dom			The created/mutated element
-   *	@private
-   */
+	 *	@param {Element} [dom=null]		A DOM node to mutate into the shape of the `vnode`
+	 *	@param {VNode} vnode			A VNode (with descendants forming a tree) representing the desired DOM structure
+	 *	@returns {Element} dom			The created/mutated element
+	 *	@private
+	 */
 	function diff(dom, vnode, context, mountAll, parent, componentRoot) {
 		// diffLevel having been 0 here indicates initial entry into the diff (not a subdiff)
 		if (!diffLevel++) { // 应该是比较节点的第一级、第二级、第三级吧
@@ -388,7 +388,7 @@
 		let out = dom,
 			prevSvgMode = isSvgMode;
 
-		// empty values (null, undefined, booleans) render as empty Text nodes
+			// empty values (null, undefined, booleans) render as empty Text nodes
 		if (vnode == null || typeof vnode === 'boolean') vnode = '';
 
 		// Fast case: Strings & Numbers create/update Text nodes.
@@ -446,7 +446,7 @@
 		let fc = out.firstChild,
 			props = out.__preactattr_,
 			vchildren = vnode.children;
-		// 第一次肯定是null的
+			// 第一次肯定是null的
 		if (props == null) {
 			props = out.__preactattr_ = {};
 			for (let a = out.attributes, i = a.length; i--;) {
@@ -475,12 +475,12 @@
 	}
 
 	/** Apply child and attribute changes between a VNode and a DOM Node to the DOM.
-   *	@param {Element} dom			Element whose children should be compared & mutated
-   *	@param {Array} vchildren		Array of VNodes to compare to `dom.childNodes`
-   *	@param {Object} context			Implicitly descendant context object (from most recent `getChildContext()`)
-   *	@param {Boolean} mountAll
-   *	@param {Boolean} isHydrating	If `true`, consumes externally created elements similar to hydration
-   */
+	 *	@param {Element} dom			Element whose children should be compared & mutated
+	 *	@param {Array} vchildren		Array of VNodes to compare to `dom.childNodes`
+	 *	@param {Object} context			Implicitly descendant context object (from most recent `getChildContext()`)
+	 *	@param {Boolean} mountAll
+	 *	@param {Boolean} isHydrating	If `true`, consumes externally created elements similar to hydration
+	 */
 	function innerDiffNode(dom, vchildren, context, mountAll, isHydrating) {
 		let originalChildren = dom.childNodes,
 			children = [],
@@ -496,7 +496,7 @@
 			vchild,
 			child;
 
-		// Build up a map of keyed children and an Array of unkeyed children:
+			// Build up a map of keyed children and an Array of unkeyed children:
 		if (len !== 0) {
 			for (var i = 0; i < len; i++) {
 				var _child = originalChildren[i],
@@ -575,9 +575,9 @@
 	}
 
 	/** Recursively recycle (or just unmount) a node and its descendants.
-   *	@param {Node} node						DOM node to start unmount/removal from
-   *	@param {Boolean} [unmountOnly=false]	If `true`, only triggers unmount lifecycle, skips removal
-   */
+	 *	@param {Node} node						DOM node to start unmount/removal from
+	 *	@param {Boolean} [unmountOnly=false]	If `true`, only triggers unmount lifecycle, skips removal
+	 */
 	function recollectNodeTree(node, unmountOnly) {
 		let component = node._component;
 		if (component) {    // 如果有子组件，就卸载子组件；那这个dom节点不做处理吗
@@ -598,9 +598,9 @@
 	}
 
 	/** Recollect/unmount all children.
-   *	- we use .lastChild here because it causes less reflow than .firstChild
-   *	- it's also cheaper than accessing the .childNodes Live NodeList
-   */
+	 *	- we use .lastChild here because it causes less reflow than .firstChild
+	 *	- it's also cheaper than accessing the .childNodes Live NodeList
+	 */
 	function removeChildren(node) {
 		node = node.lastChild;
 		while (node) {
@@ -611,10 +611,10 @@
 	}
 
 	/** Apply differences in attributes from a VNode to the given DOM Element.
-   *	@param {Element} dom		Element with attributes to diff `attrs` against
-   *	@param {Object} attrs		The desired end-state key-value attribute pairs
-   *	@param {Object} old			Current/previous attributes (from previous VNode or element's prop cache)
-   */
+	 *	@param {Element} dom		Element with attributes to diff `attrs` against
+	 *	@param {Object} attrs		The desired end-state key-value attribute pairs
+	 *	@param {Object} old			Current/previous attributes (from previous VNode or element's prop cache)
+	 */
 	function diffAttributes(dom, attrs, old) {
 		let name;
 
@@ -634,9 +634,9 @@
 	}
 
 	/** Retains a pool of Components for re-use, keyed on component name.
-   *	Note: since component names are not unique or even necessarily available, these are primarily a form of sharding.
-   *	@private
-   */
+	 *	Note: since component names are not unique or even necessarily available, these are primarily a form of sharding.
+	 *	@private
+	 */
 	let components = {};
 
 	/** Reclaim a component for later re-use by the recycler. */
@@ -681,11 +681,11 @@
 	}
 
 	/** Set a component's `props` (generally derived from JSX attributes).
-   *	@param {Object} props
-   *	@param {Object} [opts]
-   *	@param {boolean} [opts.renderSync=false]	If `true` and {@link options.syncComponentUpdates} is `true`, triggers synchronous rendering.
-   *	@param {boolean} [opts.render=true]			If `false`, no render will be triggered.
-   */
+	 *	@param {Object} props
+	 *	@param {Object} [opts]
+	 *	@param {boolean} [opts.renderSync=false]	If `true` and {@link options.syncComponentUpdates} is `true`, triggers synchronous rendering.
+	 *	@param {boolean} [opts.render=true]			If `false`, no render will be triggered.
+	 */
 	function setComponentProps(component, props, opts, context, mountAll) {
 		if (component._disable) return;
 		component._disable = true;
@@ -723,14 +723,18 @@
 	}
 
 	/** Render a Component, triggering necessary lifecycle events and taking High-Order Components into account.
-   *	@param {Component} component
-   *	@param {Object} [opts]
-   *	@param {boolean} [opts.build=false]		If `true`, component will build and store a DOM node if not already associated with one.
-   *	@private
-   */
+	 *	@param {Component} component
+	 *	@param {Object} [opts]
+	 *	@param {boolean} [opts.build=false]		If `true`, component will build and store a DOM node if not already associated with one.
+	 *	@private
+	 */
 	// 写出这个函数大体做了什么
 	function renderComponent(component, opts, mountAll, isChild) {
 		if (component._disable) return;     // _disable判断组件是否能render
+
+		if (mountAll){
+			; // 看看什么情况下mountAll为true
+		}
 
 		let props = component.props,
 			state = component.state,
@@ -741,15 +745,15 @@
 			isUpdate = component.base,                  // 当前组件dom已经被渲染
 			nextBase = component.nextBase,              // nextBase应该是在unmountComponent中被创建的
 			initialBase = isUpdate || nextBase,            // component.base || component.nextBase
-			initialChildComponent = component._component,   // 在这个方法中创建 代表子组件
+			initialChildComponent = component._component,   // 指向根子组件的实例
 			skip = false,                                       //控制是否执行render方法
 			rendered,
 			inst,
 			cbase;
 
-		// 组件是否已经创建过, 判断skip; 或者调用component.componentWillUpdate
+			// 组件是否已经创建过, 判断skip; 或者调用component.componentWillUpdate
 		if (isUpdate) {
-			component.props = previousProps;
+			component.props = previousProps;        // 如果是已经创建过的先回退props state  context
 			component.state = previousState;
 			component.context = previousContext;
 			if (opts !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state, context) === false) {    // 在哪里调用componentWillReceiveProps了？
@@ -771,13 +775,13 @@
 
 			// context to pass to the child, can be updated via (grand-)parent component
 			if (component.getChildContext) {
-				context = extend(extend({}, context), component.getChildContext());
+				context = extend(extend({}, context), component.getChildContext());     // 合并父组件和子组件共有的context
 			}
 
 			let childComponent = rendered && rendered.nodeName,
 				toUnmount,
 				base;
-			// 如果子组件还是一个组件
+			// 如果子组件还是一个组件,要先渲染子组件
 			if (typeof childComponent === 'function') {
 				// set up high order component link
 				let childProps = getNodeProps(rendered);
@@ -790,9 +794,10 @@
 					toUnmount = inst;
 
 					component._component = inst = createComponent(childComponent, childProps, context); // 创建子组件，并挂载在component._component上
-					inst.nextBase = inst.nextBase || nextBase;      // 创建组件的时候会创建nextBase？
+					inst.nextBase = inst.nextBase || nextBase;      // 创建组件的时候会创建nextBase？//nextBase到底是干嘛用的?
 					inst._parentComponent = component;              // 实例的父组件指向_parentComponent, 所以_component与_parentComponent分别的作用是什么？
 					setComponentProps(inst, childProps, 0, context, false);
+					console.log('mountAll', mountAll);
 					renderComponent(inst, 1, mountAll, true);
 				}
 
@@ -807,9 +812,10 @@
 					cbase = component._component = null;    //如果以前的子是一个组件cbase就没什么用了
 				}
 
-				if (initialBase || opts === 1) {
+				if (initialBase || opts === 1) {    // 渲染dom节点
 					if (cbase) cbase._component = null;
 					// 应该是这个地方创建出完整的节点及子节点
+					console.log('mountAll', mountAll);
 					base = diff(cbase, rendered, context, mountAll || !isUpdate, initialBase && initialBase.parentNode, true);
 				}
 			}
@@ -867,11 +873,11 @@
 	}
 
 	/** Apply the Component referenced by a VNode to the DOM.
-   *	@param {Element} dom	The DOM node to mutate
-   *	@param {VNode} vnode	A Component-referencing VNode
-   *	@returns {Element} dom	The created/mutated element
-   *	@private
-   */
+	 *	@param {Element} dom	The DOM node to mutate
+	 *	@param {VNode} vnode	A Component-referencing VNode
+	 *	@returns {Element} dom	The created/mutated element
+	 *	@private
+	 */
 	function buildComponentFromVNode(dom, vnode, context, mountAll) {
 		let c = dom && dom._component,
 			originalComponent = c,
@@ -879,6 +885,7 @@
 			isDirectOwner = c && dom._componentConstructor === vnode.nodeName,  //是不是还是这个组件
 			isOwner = isDirectOwner,
 			props = getNodeProps(vnode);
+
 		while (c && !isOwner && (c = c._parentComponent)) { // 没看懂
 			isOwner = c.constructor === vnode.nodeName;
 		}
@@ -912,9 +919,9 @@
 	}
 
 	/** Remove a component from the DOM and recycle it.
-   *	@param {Component} component	The Component instance to unmount
-   *	@private
-   */
+	 *	@param {Component} component	The Component instance to unmount
+	 *	@private
+	 */
 	function unmountComponent(component) {
 		if (options.beforeUnmount) options.beforeUnmount(component);
 
@@ -946,50 +953,50 @@
 	}
 
 	/** Base Component class.
-   *	Provides `setState()` and `forceUpdate()`, which trigger rendering.
-   *	@public
-   *
-   *	@example
-   *	class MyFoo extends Component {
-   *		render(props, state) {
-   *			return <div />;
-   *		}
-   *	}
-   */
+	 *	Provides `setState()` and `forceUpdate()`, which trigger rendering.
+	 *	@public
+	 *
+	 *	@example
+	 *	class MyFoo extends Component {
+	 *		render(props, state) {
+	 *			return <div />;
+	 *		}
+	 *	}
+	 */
 	function Component(props, context) {
 		this._dirty = true;
 
 		/** @public
-    *	@type {object}
-    */
+		*	@type {object}
+		*/
 		this.context = context;
 
 		/** @public
-    *	@type {object}
-    */
+		*	@type {object}
+		*/
 		this.props = props;
 
 		/** @public
-    *	@type {object}
-    */
+		*	@type {object}
+		*/
 		this.state = this.state || {};
 	}
 
 	extend(Component.prototype, {
 
 		/** Returns a `boolean` indicating if the component should re-render when receiving the given `props` and `state`.
-    *	@param {object} nextProps
-    *	@param {object} nextState
-    *	@param {object} nextContext
-    *	@returns {Boolean} should the component re-render
-    *	@name shouldComponentUpdate
-    *	@function
-    */
+		*	@param {object} nextProps
+		*	@param {object} nextState
+		*	@param {object} nextContext
+		*	@returns {Boolean} should the component re-render
+		*	@name shouldComponentUpdate
+		*	@function
+		*/
 
 		/** Update component state by copying properties from `state` to `this.state`.
-    *	@param {object} state		A hash of state properties to update with new values
-    *	@param {function} callback	A function to be called once component state is updated
-    */
+		*	@param {object} state		A hash of state properties to update with new values
+		*	@param {function} callback	A function to be called once component state is updated
+		*/
 		setState: function setState(state, callback) {
 			let s = this.state;
 			if (!this.prevState) this.prevState = extend({}, s);
@@ -1000,40 +1007,41 @@
 
 
 		/** Immediately perform a synchronous re-render of the component.
-    *	@param {function} callback		A function to be called after component is re-rendered.
-    *	@private
-    */
+		*	@param {function} callback		A function to be called after component is re-rendered.
+		*	@private
+		*/
 		forceUpdate: function forceUpdate(callback) {
+			console.log('forceUpdate');
 			if (callback) (this._renderCallbacks = this._renderCallbacks || []).push(callback);
 			renderComponent(this, 2);
 		},
 
 
 		/** Accepts `props` and `state`, and returns a new Virtual DOM tree to build.
-    *	Virtual DOM is generally constructed via [JSX](http://jasonformat.com/wtf-is-jsx).
-    *	@param {object} props		Props (eg: JSX attributes) received from parent element/component
-    *	@param {object} state		The component's current state
-    *	@param {object} context		Context object (if a parent component has provided context)
-    *	@returns VNode
-    */
+		*	Virtual DOM is generally constructed via [JSX](http://jasonformat.com/wtf-is-jsx).
+		*	@param {object} props		Props (eg: JSX attributes) received from parent element/component
+		*	@param {object} state		The component's current state
+		*	@param {object} context		Context object (if a parent component has provided context)
+		*	@returns VNode
+		*/
 		render: function render() {}
 	});
 
 	/** Render JSX into a `parent` Element.
-   *	@param {VNode} vnode		A (JSX) VNode to render
-   *	@param {Element} parent		DOM element to render into
-   *	@param {Element} [merge]	Attempt to re-use an existing DOM tree rooted at `merge`
-   *	@public
-   *
-   *	@example
-   *	// render a div into <body>:
-   *	render(<div id="hello">hello!</div>, document.body);
-   *
-   *	@example
-   *	// render a "Thing" component into #foo:
-   *	const Thing = ({ name }) => <span>{ name }</span>;
-   *	render(<Thing name="one" />, document.querySelector('#foo'));
-   */
+	 *	@param {VNode} vnode		A (JSX) VNode to render
+	 *	@param {Element} parent		DOM element to render into
+	 *	@param {Element} [merge]	Attempt to re-use an existing DOM tree rooted at `merge`
+	 *	@public
+	 *
+	 *	@example
+	 *	// render a div into <body>:
+	 *	render(<div id="hello">hello!</div>, document.body);
+	 *
+	 *	@example
+	 *	// render a "Thing" component into #foo:
+	 *	const Thing = ({ name }) => <span>{ name }</span>;
+	 *	render(<Thing name="one" />, document.querySelector('#foo'));
+	 */
 	function render(vnode, parent, merge) {
 		return diff(merge, vnode, {}, false, parent, false);
 	}

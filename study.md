@@ -22,10 +22,32 @@ setState之后做了什么？
 - 执行innerDiffNode方法
 - 在innerDiffNode中递归地执行idff方法
 
-innerDiffNode
+## 读renderComponent ##
 
-- 
+### renderComponent的opts作用 ###
 
+renderComponent(component, opts, mountAll, isChild)
+
+- 在renderComponent中调用，渲染子组件；传入的是1  renderComponent(inst, 1, mountAll, true);
+- 在forceUpdate中调用传入的是2。       renderComponent(this, 2);       所以此时都不执行shouldComponentUpdate
+- 在rerender中调用，什么都没传入。                     rerender(p)
+- 在 setComponentProps 中调用，传入的是1.                renderComponent(component, 1, mountAll);
+
+### mountAll的作用
+
+mountAll为true的时候，mounts.unshift(component)
+
+所以在调用 forceUpdate 之后，子组件的mountAll是不是也都为false？即forceUpdate和rerender调用时，避免了执行mounts.unshift(component)方法。
+
+第一次的时候mountAll为什么也为false？ mountAll应该是强制让一个组件完全重新渲染
+
+### renderComponent 的大致流程
+
+是否是更新的组件
+
+- 是，调用该调用的生命周期钩子
+- 是否需要重新渲染，
+  - 需要重新渲染, 
 
 ###问题
 
@@ -52,7 +74,7 @@ innerDiffNode
 
   - 组件是否是创建过的，如果是创建过的；调用shouldComponentUpdate
 
-- Promise.resolve为什么要bind，及其他Promise相关的内容；比如then是在nextTick执行还是在下一轮的事件循环中执行？
+- 组件实例和虚拟dom树的数据结构关系？
 
 
 ###从preact中学到的
@@ -60,6 +82,11 @@ innerDiffNode
 - 如果是字符串或者数字，在diff中貌似没有比较；直接修改。所以回去之后要对dom的操作性能做更深入的学习
 - diff有哪些调用方式？没有dom的时候，生成一个dom元素；有dom的，比较之后之后返回正确的dom，然后parent将其append
 - react的比较数组的方式和莱文斯坦算法比为什么性能更优？
+
+###preact的数据结构
+
+- component.base是对应dom节点
+
 
 
 ###待做

@@ -208,17 +208,19 @@ function setComponentProps(component, props){
 // 获得虚拟dom树
 // 调用diff，parentNode是initialBase.parentNode
 function buildComponentFromVNode(dom, vnode, context){ 
+
     var vnodename = vnode.nodeName,
         c = null,
         props = getNodeProps(vnode);
 
-    c = createComponent(vnodename, props, context);
+    c = createComponent(vnodename, props, context);             //根据组件类，创建实例
 
     const rendered = renderComponent(c, props, context)
 
     return idiff(dom, rendered)
 }
 
+// 设置props，调用生命周期函数；调用渲染方法
 function renderComponent(c, props, context){
     
     // 为实例设置props
@@ -231,7 +233,7 @@ function renderComponent(c, props, context){
     c.props = props
     // 调用render方法，生成虚拟dom节点的集合
     let rendered = c.render()
-    mounts.push(c)
+    mounts.push(c)          // 为了集体调用componentDidMount方法
 
     return rendered
 }

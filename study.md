@@ -47,7 +47,54 @@ mountAll为true的时候，mounts.unshift(component)
 
 - 是，调用该调用的生命周期钩子
 - 是否需要重新渲染，
-  - 需要重新渲染, 
+  - 需要重新渲染
+    - 子组件是不是组件，是的话；渲染子组件
+    - 不是的话，diff处理
+
+MyApp._component === MySpan
+MySpan._parentComponent === MyApp
+MyApp.base === MySpan.base
+MyApp.base === dom
+dom._component === MyApp    // base的\_component会指向最上层的父组件
+
+dom中_component有什么用？指的什么？
+
+## 一个组件的渲染过程
+
+- diff  将dom节点添加到父dom节点中
+- idiff  返回dom节点
+- buildComponentFromVNode 调用这个方法
+- createComponent   创建一个组件实例
+- setComponentProps  
+  - renderComponent  设置了c.base
+    - 调用渲染前的生命周期钩子
+    - 如果是子也是一个组件的话就直接renderComponent了
+    - 否则直接调用diff,    对dom的操作应该都在idiff中?
+
+
+dom操作应该都在diff和idiff中进行的，diff做parent.appendChild操作
+idiff做createNode操作,及节点比较后的替换
+
+## preact中的idiff操作
+
+如果vnode.nodeName为字符串或数字，判断原dom是字符串还是dom节点；然后做相应的操作
+
+如果是组件节点，交由buildComponent方法处理
+
+如果是普通的dom节点，且节点类型不一样的话；就把老的节点替换为新的节点，然后回收老的节点。（此时，貌似回收也没什么意义）
+
+普通dom节点，diff子节点；diff属性，然后返回对应的dom树
+
+### diffAttributes
+
+与比较两个对象的属性类似。
+
+第一步，遍历新的对象上；有没有和老的对象相同的属性，有的话看值有没有改变，有改变的话，就改掉，没有的话就添加，最后把剩下的没用的属性都删除
+
+## 回收相关的方法
+
+recollectNodeTree
+
 
 ###问题
 
@@ -92,3 +139,6 @@ mountAll为true的时候，mounts.unshift(component)
 ###待做
 
 - this.props为undefined，要学习它的renderComponent方法
+- 卸载的几个方法
+- 渲染第一层组件或节点后，第二层组件或节点时怎么渲染的？
+- ['__preactattr_']与每等级组件的props是什么关系?

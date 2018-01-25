@@ -384,6 +384,7 @@
 	/** Internals of `diff()`, separated to allow bypassing diffLevel / mount flushing. */
 	// dom: vnode对应dom
 	// dom对应render中merge,不知道是干嘛用的;是一个真实的dom节点
+	// idiff 要返回一个dom树
 	function idiff(dom, vnode, context, mountAll, componentRoot) {
 		let out = dom,
 			prevSvgMode = isSvgMode;
@@ -439,14 +440,14 @@
 				if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
 
 				// recycle the old element (skips non-Element node types)
-				recollectNodeTree(dom, true);
+				recollectNodeTree(dom, true);   //已经替换掉了，这一步有什么用?
 			}
 		}
 		// 这个时候子节点应该都没东西才对，因为out是刚创建的
 		let fc = out.firstChild,
 			props = out.__preactattr_,
 			vchildren = vnode.children;
-			// 第一次肯定是null的
+			// 把dom节点的attributes都放在了dom['__preactattr_']上
 		if (props == null) {
 			props = out.__preactattr_ = {};
 			for (let a = out.attributes, i = a.length; i--;) {
@@ -454,6 +455,7 @@
 			}
 		}
 
+		// 如果vchildren只有一个节点，且是textnode节点时的优化
 		// Optimization: fast-path for elements containing a single TextNode:
 		if (!hydrating && vchildren && vchildren.length === 1 && typeof vchildren[0] === 'string' && fc != null && fc.splitText !== undefined && fc.nextSibling == null) {
 			if (fc.nodeValue != vchildren[0]) {
@@ -578,7 +580,7 @@
 	 *	@param {Node} node						DOM node to start unmount/removal from
 	 *	@param {Boolean} [unmountOnly=false]	If `true`, only triggers unmount lifecycle, skips removal
 	 */
-	function recollectNodeTree(node, unmountOnly) {
+	function recollectNodeTree(node, unmountOnly) { // 卸载dom树
 		let component = node._component;
 		if (component) {    // 如果有子组件，就卸载子组件；那这个dom节点不做处理吗
 			// if node is owned by a Component, unmount that component (ends up recursing back here)
@@ -601,6 +603,9 @@
 	 *	- we use .lastChild here because it causes less reflow than .firstChild
 	 *	- it's also cheaper than accessing the .childNodes Live NodeList
 	 */
+	// 如果是一个树型的dom树，可能什么事都没做 removeChildren => recollectNodeTree => removeChildren
+	// 除非它的子dom节点中有_component对应一个组件，但是应该不可能；因为父dom节点都没对应一个_component
+	// dom._component应该是在最上层的dom节点上设置的
 	function removeChildren(node) {
 		node = node.lastChild;
 		while (node) {
@@ -620,7 +625,7 @@
 
 		// remove attributes no longer present on the vnode by setting them to undefined
 		for (name in old) {
-			if (!(attrs && attrs[name] != null) && old[name] != null) {
+			if (!(attrs && attrs[name] != null) && old[name] != null) {     // 没有新的或新的不存在，老的有，删除老的
 				setAccessor(dom, name, old[name], old[name] = undefined, isSvgMode);
 			}
 		}
@@ -836,7 +841,8 @@
 				unmountComponent(toUnmount);
 			}
 
-			component.base = base;
+			component.base = base;  // base是渲染出的dom
+
 			if (base && !isChild) {
 				let componentRef = component,
 					t = component;
@@ -885,7 +891,7 @@
 			isDirectOwner = c && dom._componentConstructor === vnode.nodeName,  //是不是还是这个组件
 			isOwner = isDirectOwner,
 			props = getNodeProps(vnode);
-
+		;
 		while (c && !isOwner && (c = c._parentComponent)) { // 没看懂
 			isOwner = c.constructor === vnode.nodeName;
 		}
@@ -922,6 +928,7 @@
 	 *	@param {Component} component	The Component instance to unmount
 	 *	@private
 	 */
+	// 调用生命周期方法，递归卸载组件或节点；收集组件，清掉ref。
 	function unmountComponent(component) {
 		if (options.beforeUnmount) options.beforeUnmount(component);
 

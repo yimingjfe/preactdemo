@@ -27,7 +27,7 @@ class MySpan extends Component{
 
 class MyApp extends Component{
   state = {
-    number: '143243'
+    number: '143243',
   }
 
   componentDidMount(){
@@ -38,10 +38,26 @@ class MyApp extends Component{
     //     console.log('number', this.state.number)
     //   })
     // }, 2000)
-    setTimeout( () => {
-      this.forceUpdate()
-    }, 3000);
+
+    // setTimeout( () => {
+    //   this.forceUpdate()
+    // }, 3000);
+
+    setTimeout(() => {
+      this.setState({
+        number: '12412423'
+      })
+    }, 4000)
   }
+
+  // _renderMySpan = () => {
+  //   const { flag } = this.state
+  //   if(!flag){
+  //     return <MySpan>5583</MySpan>
+  //   } else {
+  //     return <MySpan>53y6</MySpan>
+  //   }
+  // }
 
   render(){
     console.log('this', this.props)
@@ -57,7 +73,7 @@ class MyApp extends Component{
     //   )
     // }
     return (
-      <MySpan>{number}</MySpan>
+      <MySpan>{ number }</MySpan>
     )
 
   }

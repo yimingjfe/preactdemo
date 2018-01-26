@@ -33,6 +33,17 @@ renderComponent(component, opts, mountAll, isChild)
 - 在rerender中调用，什么都没传入。                     rerender(p)
 - 在 setComponentProps 中调用，传入的是1.                renderComponent(component, 1, mountAll);
 
+所以opts有0 1 2三种值
+
+```
+// 各种渲染模式
+
+export const NO_RENDER = 0; //不渲染
+export const SYNC_RENDER = 1;//React.render就是同步
+export const FORCE_RENDER = 2;//forceUpdate
+export const ASYNC_RENDER = 3;//组件的更新是异步
+```
+
 ### mountAll的作用
 
 mountAll为true的时候，mounts.unshift(component)
@@ -68,7 +79,7 @@ dom中_component有什么用？指的什么？
 - setComponentProps  
   - renderComponent  设置了c.base
     - 调用渲染前的生命周期钩子
-    - 如果是子也是一个组件的话就直接renderComponent了
+    - 如果是子也是一个组件的话createComponent setComponentProps 然后 renderComponent
     - 否则直接调用diff,    对dom的操作应该都在idiff中?
 
 
@@ -89,11 +100,16 @@ idiff做createNode操作,及节点比较后的替换
 
 与比较两个对象的属性类似。
 
-第一步，遍历新的对象上；有没有和老的对象相同的属性，有的话看值有没有改变，有改变的话，就改掉，没有的话就添加，最后把剩下的没用的属性都删除
 
 ## 回收相关的方法
 
 recollectNodeTree
+
+## setState之后的流程
+
+- 调用setState
+- 把组件加入到渲染队列
+- 等到事件循环队列都执行完毕后，从数组里重新渲染
 
 
 ###问题
@@ -140,5 +156,4 @@ recollectNodeTree
 
 - this.props为undefined，要学习它的renderComponent方法
 - 卸载的几个方法
-- 渲染第一层组件或节点后，第二层组件或节点时怎么渲染的？
-- ['__preactattr_']与每等级组件的props是什么关系?
+- setState之后的流程

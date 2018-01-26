@@ -580,9 +580,9 @@
 	 *	@param {Node} node						DOM node to start unmount/removal from
 	 *	@param {Boolean} [unmountOnly=false]	If `true`, only triggers unmount lifecycle, skips removal
 	 */
-	function recollectNodeTree(node, unmountOnly) { // 卸载dom树
+	function recollectNodeTree(node, unmountOnly) { // 卸载dom树,卸载上层的节点后;它的孩子应该都没调用removeNode
 		let component = node._component;
-		if (component) {    // 如果有子组件，就卸载子组件；那这个dom节点不做处理吗
+		if (component) {    // 如果有子组件，就卸载子组件；在组件中卸载组件之后，会把这个节点和它的孩子都卸载掉的
 			// if node is owned by a Component, unmount that component (ends up recursing back here)
 			unmountComponent(component);
 		}
@@ -591,7 +591,7 @@
 			// (this is part of the React spec, and smart for unsetting references)
 			if (node.__preactattr_ != null && node.__preactattr_.ref) node.__preactattr_.ref(null);
 
-			if (unmountOnly === false || node.__preactattr_ == null) {   // 如果node是组件，就不执行remoeNode
+			if (unmountOnly === false || node.__preactattr_ == null) {   // 这个节点不是组件根节点的情况下，就不做卸载处理；所以removechildren中传递的true可能是没用的
 				removeNode(node);
 			}
 
@@ -671,6 +671,7 @@
 		if (list) {
 			for (let i = list.length; i--;) {
 				if (list[i].constructor === Ctor) {
+					;    // 想看一下此时dom上preact添加的属性是否已经清空？比如dom._component dom['__preact_']
 					inst.nextBase = list[i].nextBase;
 					list.splice(i, 1);
 					break;
@@ -688,8 +689,8 @@
 	/** Set a component's `props` (generally derived from JSX attributes).
 	 *	@param {Object} props
 	 *	@param {Object} [opts]
-	 *	@param {boolean} [opts.renderSync=false]	If `true` and {@link options.syncComponentUpdates} is `true`, triggers synchronous rendering.
-	 *	@param {boolean} [opts.render=true]			If `false`, no render will be triggered.
+	 *	@param {boolean} [opts.renderSync=false]	If `true` and {@link options.syncComponentUpdates} is `true`, triggers synchronous rendering. 即等于1触发同步更新？
+	 *	@param {boolean} [opts.render=true]			If `false`, no render will be triggered. 等于2不触发更新？
 	 */
 	function setComponentProps(component, props, opts, context, mountAll) {
 		if (component._disable) return;
@@ -698,7 +699,7 @@
 		if (component.__ref = props.ref) delete props.ref;
 		if (component.__key = props.key) delete props.key;
 		// 如果组件没有被渲染过，或者确定要自上而下要完全重新渲染
-		if (!component.base || mountAll) {
+		if (!component.base || mountAll) {  // 这两个生命周期钩子会比shouldComponentUpdate
 			if (component.componentWillMount) component.componentWillMount();
 		}
  else if (component.componentWillReceiveProps) {
@@ -706,11 +707,11 @@
 		}
 
 		if (context && context !== component.context) {
-			if (!component.prevContext) component.prevContext = component.context;
+			if (!component.prevContext) component.prevContext = component.context;  // 如果先前有prevContext,这里就不更新了吗？为什么？
 			component.context = context;
 		}
 		// 可能是第一次渲染，也可能是回收；再渲染的
-		if (!component.prevProps) component.prevProps = component.props;
+		if (!component.prevProps) component.prevProps = component.props; // 如果先前有prevProps,这里就不在更新了；为什么？
 		component.props = props;        // 直接更改props的指针
 
 		component._disable = false;
@@ -874,8 +875,8 @@
 				component._renderCallbacks.pop().call(component);
 			}
 		}
-
-		if (!diffLevel && !isChild) flushMounts();
+		;
+		if (!diffLevel && !isChild) flushMounts();          // 判断diff是不是到了最后，最后的话标记为0
 	}
 
 	/** Apply the Component referenced by a VNode to the DOM.
@@ -888,15 +889,15 @@
 		let c = dom && dom._component,
 			originalComponent = c,
 			oldDom = dom,
-			isDirectOwner = c && dom._componentConstructor === vnode.nodeName,  //是不是还是这个组件
+			isDirectOwner = c && dom._componentConstructor === vnode.nodeName,  // 组件类型是否变了
 			isOwner = isDirectOwner,
 			props = getNodeProps(vnode);
-		;
-		while (c && !isOwner && (c = c._parentComponent)) { // 没看懂
+
+		while (c && !isOwner && (c = c._parentComponent)) { // 如果组件类型变了，一直向上遍历；看类型是否相同
 			isOwner = c.constructor === vnode.nodeName;
 		}
 
-		if (c && isOwner && (!mountAll || c._component)) {
+		if (c && isOwner && (!mountAll || c._component)) {  // 如果组件类型相同，只设置属性；然后更改c.base，dom._component怎么办？
 			setComponentProps(c, props, 3, context, mountAll);
 			dom = c.base;
 		}
@@ -934,7 +935,7 @@
 
 		let base = component.base;  //component.base是离组件最近的dom节点
 
-		component._disable = true;
+		component._disable = true;  // 已经卸载过的组件不在让渲染了。
 
 		if (component.componentWillUnmount) component.componentWillUnmount();
 

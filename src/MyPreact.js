@@ -5,6 +5,8 @@ const components = {}
 
 const defer = typeof Promise === 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout
 
+let diffLevel = 0
+
 let mounts = []
 
 let renderItems = []
@@ -70,35 +72,40 @@ function collectComponent(component){
 }
 
 function unmountComponent(component){
-    let base = component.base
-    if(component.componentWillMount) component.componentWillMount()
+    var childComponent = component._component,
+        base = component.base;
 
-    component.base = null
+    component.componentWillUnmount && component.componentWillUnmount();
 
-    let inner = component._component
-
-    if(inner){
-        unmountComponent(component._component)
+    if(childComponent) {
+        unmountComponent(childComponent);
     } else {
-        if(base['__preactattr_'] && base['__preactattr_'].ref) base['__preactattr_'].ref(null)
+        if(base['__preactattr_' && base['__preactattr_'].ref]) base['__preactattr_'].ref(null);
 
-        component.nextBase = base
+        component.nextBase = base;
 
-        removeNode(base)
+        removeNode(base);
 
-        collectComponent(component)
+        collectComponent(component);
 
-        removeChildren(base)
+        removeChildren(base);
     }
 
-    if(component.__ref) component.__ref(null) 
+    if(component._ref) component._ref(null)
 }
 
 function recollectNodeTree(node, unmountOnly){
-    if(node._component){
-        unmountComponent(node)
+    var component = node._component;
+    if(component){
+        unmountComponent(component);
     } else {
-        removeNode(node)
+        if(node['__preactattr_' && node['__preactattr_'].ref]) node['__preactattr_'].ref(null);
+
+        if(!unmountOnly && node['__preactattr_'] == null){
+            removeNode(node);
+        }
+
+        removeChildren(node);
     }
 }
 
@@ -181,19 +188,17 @@ function getNodeProps(vnode){
 }
 
 function createComponent(Ctor, props, context){
-    var inst = new Ctor(props, context)
-    return inst
-}
+    var inst = new Ctor(props, context);
 
-function setComponentProps(component, props){
-    if(component.__ref = props.ref) delete props.ref
-    if(component.__key = props.key) delete props.key
-    if(!component.base){
-        if(component.componentWillMount) component.componentWillMount();
-    } else if (component.componentWillReceiveProps) {
-        component.componentWillReceiveProps(props, context)
+    for(var i = list.length; i--;) {
+        if(Ctor === list[i].constructor){
+            inst.nextBase = list[i].nextBase;
+            list.splice(i ,1);
+            break;
+        }
     }
-    component.props = props;
+
+    return inst
 }
 
 // props或state变化了，调用当前方法；每次都生成一个新的实例；性能问题是如何处理的？
@@ -208,33 +213,89 @@ function setComponentProps(component, props){
 // 获得虚拟dom树
 // 调用diff，parentNode是initialBase.parentNode
 function buildComponentFromVNode(dom, vnode, context){ 
-
     var vnodename = vnode.nodeName,
         c = null,
         props = getNodeProps(vnode);
 
     c = createComponent(vnodename, props, context);             //根据组件类，创建实例
 
-    const rendered = renderComponent(c, props, context)
+    setComponentProps(c, props, 1, context)
+    dom = c.base;
 
-    return idiff(dom, rendered)
+    return dom;
+}
+
+function setComponentProps(component, props, opts, context){
+
+    if (component.__ref = props.ref) delete props.ref;
+    if (component.__key = props.key) delete props.key;
+
+    if(!component.base){
+        component.componentWillMount && component.componentWillMount();
+    } else if(component.componentWillReceiveProps) {
+        component.componentWillReceiveProps(props, context);
+    }
+
+    if(component.__ref) component.__ref(component)
+
+    if(opts !== 0){
+        if(opts === 1 || !component.base){
+            renderComponent(component, opts);
+        } else {
+            enqueueRender(component)
+        }
+    }
+
 }
 
 // 设置props，调用生命周期函数；调用渲染方法
-function renderComponent(c, props, context){
-    
-    // 为实例设置props
-    if(!c.base){
-        if(c.componentWillMount) c.componentWillMount()
-    } else if(c.componentWillReceiveProps){
-        c.componentWillReceiveProps(props)
-    }
-    c.prevProps = c.props
-    c.props = props
-    // 调用render方法，生成虚拟dom节点的集合
-    let rendered = c.render()
-    mounts.push(c)          // 为了集体调用componentDidMount方法
+function renderComponent(component, opts){
+    var props = component.props,
+        state = component.state,
+        prevProps = component.prevProps,
+        prevState = component.prevState,
+        base = component.base,
+        nextBase = component.nextBase,
+        initialBase = base || nextBase,
+        skip = false,
+        inst = null,
+        rendered = null,
+        isUpdate = base;
 
+    if(isUpdate){
+        component.props = prevProps;
+        component.state = prevState;
+        skip = component.shouldComponentUpdate();
+    }
+
+    if(!skip && !initialBase){
+        component.componentWillUpdate(props, state);
+        component.state = state;
+        component.props = props;
+        rendered = component.render();
+        if(typeof rendered.nodeName !== 'function'){
+            component.base = rendered;
+            rendered._component = component;
+            if(!update){
+                mounts.push(component)          // 为了集体调用componentDidMount方法
+            }
+        } else {
+            var inst = createComponent(rendered.nodeName, rendered.props, context)
+            setComponentProps(component, inst.props, opts, context);
+            rendered = renderComponent(rendered, opts);
+            rendered._component = component;
+        }
+    } else {
+        component.state = state;
+        component.props = props;
+    }
+
+    if(component._renderCallbacks){
+        while(component._renderCallbacks.length){
+            component._renderCallbacks.pop().call(component)
+        }
+    }
+    
     return rendered
 }
 
@@ -301,11 +362,16 @@ function isSameNodeType(dom, vnode){
 }
 
 function diff(dom, vnode, parent){
+    diffLevel++;
     const ret = idiff(dom, vnode)
     if(parent && ret.parentNode !== parent){
         parent.appendChild(ret)
     }
-    flushMounts()
+
+    if(--diffLevel){
+        flushMounts()
+    }
+    
     return ret
 }
 

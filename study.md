@@ -52,6 +52,8 @@ mountAll为true的时候，mounts.unshift(component)
 
 第一次的时候mountAll为什么也为false？ mountAll应该是强制让一个组件完全重新渲染
 
+mountAll决定了是否调用componentWillMount和componentDidMount生命周期钩子函数
+
 ### renderComponent 的大致流程
 
 是否是更新的组件
@@ -60,7 +62,15 @@ mountAll为true的时候，mounts.unshift(component)
 - 是否需要重新渲染，
   - 需要重新渲染
     - 子组件是不是组件，是的话；渲染子组件
+      - 子组件的类型与老的子组件的类型是不是同一个类型？如果是同一个类型，只需要setComponentProps。
+      - 创建子组件的实例，setComponentProps，renderComponent。
     - 不是的话，diff处理
+  - 第一级的子是否有变化？如果有变化的话,就做替换，然后回收被替换掉的节点。
+  - 子组件变了的话就卸载子组件。
+  - 设置base，且为每一层父组件设置base。
+  - 是否是第一次渲染
+    - 是，走mounts处理，以便调用component.componentDidMount
+    - 否，直接调用componentDidUpdate，所以此时子组件的componentDidUpdate会先被调用
 
 MyApp._component === MySpan
 MySpan._parentComponent === MyApp
@@ -111,6 +121,19 @@ recollectNodeTree
 - 把组件加入到渲染队列
 - 等到事件循环队列都执行完毕后，从数组里重新渲染
 
+## 第一次渲染所做的操作
+
+- 渲染第一个组件
+- 拿到第一个组件的虚拟dom树
+- 使用这虚拟dom树与undefined，再做diff
+- 在idiff创造出第一层的节点
+- 调用InnerDiffNode方法,在一个for循环中对每一个子child，调用idiff，拿到的节点append或insertBefore
+- 返回第一层节点，整颗树被append进入document
+
+## context的处理
+
+context在renderComponent与setComponentProps中处理，大致是diff的时候带着上层的context，然后在每次渲染的时候取出getChildContext,然后extend合并。
+
 
 ###问题
 
@@ -155,5 +178,5 @@ recollectNodeTree
 ###待做
 
 - this.props为undefined，要学习它的renderComponent方法
-- 卸载的几个方法
+- 所有卸载相关的内容（待）
 - setState之后的流程

@@ -254,40 +254,63 @@ function renderComponent(component, opts){
         state = component.state,
         prevProps = component.prevProps,
         prevState = component.prevState,
-        base = component.base,
+        prevContext = component.prevContext,
+        isUpdate = component.base,
         nextBase = component.nextBase,
         initialBase = base || nextBase,
+        initialChildComponent = component._component,
         skip = false,
         inst = null,
         rendered = null,
-        isUpdate = base;
+        cbase,
+        toUnmount;
 
     if(isUpdate){
         component.props = prevProps;
         component.state = prevState;
-        skip = component.shouldComponentUpdate();
+        component.context = prevContext;
+        if(opts !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state)){
+            skip = true;
+        } else {
+            component.componentWillUpdate(props, state);
+        }
+        component.state = state;
+        component.props = props;
+        component.context = prevContext;
     }
 
+    component.prevProps = component.prevState = component.prevContext = null;
+
     if(!skip && !initialBase){
-        component.componentWillUpdate(props, state);
-        component.state = state;
-        component.props = props;
-        rendered = component.render();
-        if(typeof rendered.nodeName !== 'function'){
-            component.base = rendered;
-            rendered._component = component;
-            if(!update){
-                mounts.push(component)          // 为了集体调用componentDidMount方法
+        rendered = component.render(props, state, context);
+        var childComponent = rendered.nodeName;
+        if(typeof childComponent !== 'function'){
+            cbase = initialBase;
+            toUnmount = initialChildComponent;
+            if(toUnmount){
+                cbase._component = component._component = null;
             }
+
+            base = diff(cbase, rendered, initialBase.parentNode)
+
         } else {
-            var inst = createComponent(rendered.nodeName, rendered.props, context)
-            setComponentProps(component, inst.props, opts, context);
-            rendered = renderComponent(rendered, opts);
-            rendered._component = component;
+            inst = initialChildComponent;
+
+            if(inst && inst.constructor === childComponent){
+                setComponentProps(inst, childComponent.props, opts, context);
+            } else {
+                toUnmount = inst;
+
+                component._component = inst = createComponent(rendered.nodeName, rendered.props, context);
+                inst._parentComponent = component;
+                setComponentProps(component, inst.props, opts, context);
+                renderComponent(rendered, opts);
+            }
         }
-    } else {
-        component.state = state;
-        component.props = props;
+    }
+
+    if(!update){
+        mounts.push(component)          // 为了集体调用componentDidMount方法
     }
 
     if(component._renderCallbacks){

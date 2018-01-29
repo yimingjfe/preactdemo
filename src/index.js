@@ -2,7 +2,6 @@
 import './style';
 // import App from './components/app';
 import { render, Component, h } from 'preact'
-import { setTimeout } from 'timers';
 // import { render, h, Component } from './MyPreact'
 // import { setTimeout } from 'timers';
 
@@ -19,9 +18,19 @@ class MyChild extends Component{
   }
 }
 
+// class MySpan extends Component{
+//   render(){
+//     return <MyChild {...this.props} />
+//   }
+// }
+
 class MySpan extends Component{
   render(){
-    return <MyChild {...this.props} />
+    return (
+      <div>
+        {this.props.children}
+      </div> 
+    )
   }
 }
 
@@ -73,7 +82,11 @@ class MyApp extends Component{
     //   )
     // }
     return (
-      <MySpan>{ number }</MySpan>
+      <div>
+        <MySpan>
+          <div>{number}</div>
+        </MySpan>
+      </div> 
     )
 
   }

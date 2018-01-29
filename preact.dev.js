@@ -356,6 +356,10 @@
 	 *	@returns {Element} dom			The created/mutated element
 	 *	@private
 	 */
+	// componentRoot其实是一个标识符号，如果是从render中调用的diff；最后要flushMounts
+	// 如果是从renderComponent中调用的，componentRoot为true，此时不能flushMounts
+	// 使用render方法调用的时候，mountAll为false
+	// 如果完全没有mountAll可不可以？
 	function diff(dom, vnode, context, mountAll, parent, componentRoot) {
 		// diffLevel having been 0 here indicates initial entry into the diff (not a subdiff)
 		if (!diffLevel++) { // 应该是比较节点的第一级、第二级、第三级吧
@@ -699,7 +703,7 @@
 		if (component.__ref = props.ref) delete props.ref;
 		if (component.__key = props.key) delete props.key;
 		// 如果组件没有被渲染过，或者确定要自上而下要完全重新渲染
-		if (!component.base || mountAll) {  // 这两个生命周期钩子会比shouldComponentUpdate
+		if (!component.base || mountAll) {  // 这两个生命周期钩子会比shouldComponentUpdate, 11111
 			if (component.componentWillMount) component.componentWillMount();
 		}
  else if (component.componentWillReceiveProps) {
@@ -739,7 +743,7 @@
 		if (component._disable) return;     // _disable判断组件是否能render
 
 		if (mountAll){
-			; // 看看什么情况下mountAll为true
+			// debugger // 看看什么情况下mountAll为true
 		}
 
 		let props = component.props,
@@ -793,7 +797,7 @@
 				let childProps = getNodeProps(rendered);
 				inst = initialChildComponent;           // component._component
 
-				if (inst && inst.constructor === childComponent && childProps.key == inst.__key) {  // 子组件的key和构造函数都没变
+				if (inst && inst.constructor === childComponent && childProps.key == inst.__key) {  // 只判断构造函数不够吗？为什么需要判断key?
 					setComponentProps(inst, childProps, 1, context, false);
 				}
  else {    // 变了就重新创建实例，设置实例的nextBase;设置实例的_parentComponent;设置实例的属性，然后渲染
@@ -820,8 +824,7 @@
 
 				if (initialBase || opts === 1) {    // 渲染dom节点
 					if (cbase) cbase._component = null;
-					// 应该是这个地方创建出完整的节点及子节点
-					console.log('mountAll', mountAll);
+					// 应该是这个地方创建出完整的节点及子节点，所以这个地方第一次渲染的时候mountAll会为true
 					base = diff(cbase, rendered, context, mountAll || !isUpdate, initialBase && initialBase.parentNode, true);
 				}
 			}
@@ -847,7 +850,7 @@
 			if (base && !isChild) {
 				let componentRef = component,
 					t = component;
-				while (t = t._parentComponent) {    // 有父组件的话，向上回溯；将父组件的base设置为当前的base
+				while (t = t._parentComponent) {    // 有父组件的话，向上回溯；将每一个父组件的base设置为当前的base
 					(componentRef = t).base = base;
 				}
 				base._component = componentRef;     // 所以base的_component也指向最上方的constructor
@@ -855,7 +858,7 @@
 			}
 		}
 
-		if (!isUpdate || mountAll) {            // 保存组件到一个数组，以便同时执行componentDidMount
+		if (!isUpdate || mountAll) {            // 保存组件到一个数组，以便同时执行componentDidMount   222222
 			mounts.unshift(component);          // 在flushMounts里面是pop,当前先进的先执行；保证了先执行父亲，再执行孩子
 		}
  else if (!skip) {
@@ -875,7 +878,7 @@
 				component._renderCallbacks.pop().call(component);
 			}
 		}
-		;
+
 		if (!diffLevel && !isChild) flushMounts();          // 判断diff是不是到了最后，最后的话标记为0
 	}
 
@@ -885,6 +888,8 @@
 	 *	@returns {Element} dom	The created/mutated element
 	 *	@private
 	 */
+	// 看给定dom对应的组件类型与给定vnode.nodeName的类型是否一致
+	// 如果组件类型相同，直接设置组件的props
 	function buildComponentFromVNode(dom, vnode, context, mountAll) {
 		let c = dom && dom._component,
 			originalComponent = c,
@@ -896,8 +901,8 @@
 		while (c && !isOwner && (c = c._parentComponent)) { // 如果组件类型变了，一直向上遍历；看类型是否相同
 			isOwner = c.constructor === vnode.nodeName;
 		}
-
-		if (c && isOwner && (!mountAll || c._component)) {  // 如果组件类型相同，只设置属性；然后更改c.base，dom._component怎么办？
+		// mountAll为false，或者c._component存在，就直接设置props
+		if (c && isOwner && (!mountAll || c._component)) {  // 如果组件类型相同，只设置属性；然后更改c.base，dom._component怎么办？33333
 			setComponentProps(c, props, 3, context, mountAll);
 			dom = c.base;
 		}

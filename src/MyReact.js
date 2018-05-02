@@ -1,31 +1,56 @@
-const h = (type, props = {}, children = []) => ({
-	type,
-	props,
-	children
-});
+/* eslint-disable */
+let rootInstance = null;
 
-export const createVDOM = (element, id = '.') => {
-	const newElement = {
-		...element,
-		id,
-		children: element.children.map((child, index) => createVDOM(child, `${id}${index}.`))
-	};
+function render(element, container){
+	let prevInstance = rootInstance;
+	const newInstance = reconcile(container, element, prevInstance);
+	rootInstance = newInstance
+}
 
-	// Is this a component?
-	if (typeof element.type === 'function') {
-		// Call the component and pass in the props.
-		// Returns the generated subtree
-		const subtree = newElement.type(element.props);
-    
-		if (subtree.memoized) {
-			return subtree;
-		}
-		// Call ourself recursively in order to assign the right ID
-		// to the nodes and process any subcomponents in the subtree
-		return createVDOM(subtree, id);
+function reconcile(parentDom, element, prevInstance){
+	if (!prevInstance){
+		const newInstance = instantiate(element)
+		parentDom.appendChild(newInstance.dom)
+	} else {
+		const newInstance = instantiate(element);
+		parentDom.replaceChild(prevInstance.dom, newInstance);
 	}
-	// If we come across an element that is not a function,
-	// all we have to do is return it
-	return newElement;
-  
-};
+	return newInstance
+}
+
+function instantiate(element){
+	const { props, type } = element
+
+	const isTextElement = type === "TEXT ELEMENT";
+
+	const dom = isTextElement 
+		? document.createTextNode("")
+		: document.createElement(type)
+
+
+	const isListener = name => name.startsWith('on')
+	const isAttribute = name => !isListener(name) && name != 'children'
+	const isKey = name => name === 'key'
+	const ischildren = name => name === 'children'
+
+	Object.keys(props).filter(isListener).forEach(name => {
+		dom.addEventListener(name, props[name])
+	})
+
+	Object.keys(props).filter(isAttribute).forEach(name => {
+		dom.name = props[name]
+	})
+
+	let childrenInstances = props.children.map(instantiate)
+	childrenInstances.forEach(childInstance => {
+		dom.appendChild(childInstance.dom)
+	})
+
+	let instance = {dom: dom, children: childrenInstances}
+
+	return instance
+}
+
+function createElement(type, attributes, children){
+
+}

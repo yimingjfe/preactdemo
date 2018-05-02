@@ -10,7 +10,6 @@ let nextUnitOfWork = null;
 let pendingCommit = null;
 
 let workQueue = []
-let nextUnitOfWork = null
 
 // Effect tags
 

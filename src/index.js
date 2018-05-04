@@ -1,53 +1,99 @@
 /* eslint-disable */
-/** @jsx Didact.createElement */
+import './style';
+// import App from './components/app';
+import { render, Component, h } from 'preact'
+// import { render, h, Component } from './MyPreact'
+// import { setTimeout } from 'timers';
 
-import importFromBelow from './MyReact3';
 
-const Didact = importFromBelow();
-
-const stories = [
-	{ name: 'Didact introduction', url: 'http://bit.ly/2pX7HNn' },
-	{ name: 'Rendering DOM elements ', url: 'http://bit.ly/2qCOejH' },
-	{ name: 'Element creation and JSX', url: 'http://bit.ly/2qGbw8S' },
-	{ name: 'Instances and reconciliation', url: 'http://bit.ly/2q4A746' },
-	{ name: 'Components and state', url: 'http://bit.ly/2rE16nh' }
-];
-
-class App extends Didact.Component {
-	render() {
-		return (
-			<div>
-				<h1>Didact Stories</h1>
-				<ul>
-					{this.props.stories.map(story => <Story name={story.name} url={story.url} />)}
-				</ul>
-			</div>
-		);
-	}
+class MyChild extends Component{
+  render(){
+    let  props = { ...this.props }
+    delete props.children
+    return (
+      <div id='myspan' {...props}>
+        {this.props.children}
+      </div>
+    )
+  }
 }
 
-class Story extends Didact.Component {
-	constructor(props) {
-		super(props);
-		this.state = { likes: Math.ceil(Math.random() * 100) };
-	}
-	like() {
-		console.log('like')
-		this.setState({
-			likes: this.state.likes + 1
-		});
-	}
-	render() {
-		const { name, url } = this.props;
-		const { likes } = this.state;
-		const likesElement = <span />;
-		return (
-			<li>
-				<button onClick={e => this.like()}>{likes}<b>❤️</b></button>
-				<a href={url}>{name}</a>
-			</li>
-		);
-	}
+// class MySpan extends Component{
+//   render(){
+//     return <MyChild {...this.props} />
+//   }
+// }
+
+class MySpan extends Component{
+  render(){
+    return (
+      <div>
+        {this.props.children}
+      </div> 
+    )
+  }
 }
 
-Didact.render(<App stories={stories} />, document.body);
+class MyApp extends Component{
+  state = {
+    number: '143243',
+  }
+
+  componentDidMount(){
+    // setTimeout( () => {
+    //   this.setState({
+    //     number: '200434'
+    //   }, () => {
+    //     console.log('number', this.state.number)
+    //   })
+    // }, 2000)
+
+    // setTimeout( () => {
+    //   this.forceUpdate()
+    // }, 3000);
+
+    setTimeout(() => {
+      this.setState({
+        number: '12412423'
+      })
+    }, 4000)
+  }
+
+  // _renderMySpan = () => {
+  //   const { flag } = this.state
+  //   if(!flag){
+  //     return <MySpan>5583</MySpan>
+  //   } else {
+  //     return <MySpan>53y6</MySpan>
+  //   }
+  // }
+
+  render(){
+    console.log('this', this.props)
+    const { title } = this.props
+    const { number } = this.state
+    // if(number > 20){
+    //   return (
+    //     <MySpan id='child' style={{color: 'red', fontSize: 40}}>{number}</MySpan>
+    //   )
+    // } else {
+    //   return (
+    //     <span>{title}</span>
+    //   )
+    // }
+    return (
+      <div>
+        <MySpan>
+          <div>{number}</div>
+        </MySpan>
+      </div> 
+    )
+
+  }
+}
+
+let title = '64544'
+
+render((
+  <MyApp title={title} />
+), document.body)

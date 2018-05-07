@@ -1,5 +1,5 @@
 (function () {
-	
+
 
 	/** Virtual DOM Node */
 	function VNode() {}
@@ -11,15 +11,15 @@
 	let options = {
 
 		/** If `true`, `prop` changes trigger synchronous component updates.
-		*	@name syncComponentUpdates
-		*	@type Boolean
-		*	@default true
-		*/
+		 *	@name syncComponentUpdates
+		 *	@type Boolean
+		 *	@default true
+		 */
 		//syncComponentUpdates: true,
 
 		/** Processes all created VNodes.
-		*	@param {VNode} vnode	A newly-created VNode to normalize/process
-		*/
+		 *	@param {VNode} vnode	A newly-created VNode to normalize/process
+		 */
 		//vnode(vnode) { }
 
 		/** Hook invoked after a component is mounted. */
@@ -84,21 +84,20 @@
 				for (i = child.length; i--;) {
 					stack.push(child[i]);
 				}
-			}
- else {
+			} else {
 				if (typeof child === 'boolean') child = null;
 				// 基本类型都转换为string
 				if (simple = typeof nodeName !== 'function') {
-					if (child == null) child = '';else if (typeof child === 'number') child = String(child);else if (typeof child !== 'string') simple = false;
+					if (child == null) child = '';
+					else if (typeof child === 'number') child = String(child);
+					else if (typeof child !== 'string') simple = false;
 				}
 
 				if (simple && lastSimple) {
 					children[children.length - 1] += child;
-				}
- else if (children === EMPTY_CHILDREN) {
+				} else if (children === EMPTY_CHILDREN) {
 					children = [child];
-				}
- else {
+				} else {
 					children.push(child);
 				}
 
@@ -128,7 +127,8 @@
 	function extend(obj, props) {
 		for (let i in props) {
 			obj[i] = props[i];
-		} return obj;
+		}
+		return obj;
 	}
 
 	/**
@@ -186,7 +186,7 @@
 		if (typeof vnode === 'string' || typeof vnode === 'number') {
 			return node.splitText !== undefined;
 		}
-		if (typeof vnode.nodeName === 'string') {         // 是一个节点的情况
+		if (typeof vnode.nodeName === 'string') { // 是一个节点的情况
 			return !node._componentConstructor && isNamedNode(node, vnode.nodeName);
 		}
 		return hydrating || node._componentConstructor === vnode.nodeName;
@@ -260,54 +260,47 @@
 
 		if (name === 'key') {
 			// ignore
-		}
- else if (name === 'ref') {
+		} else if (name === 'ref') {
 			if (old) old(null);
 			if (value) value(node);
-		}
- else if (name === 'class' && !isSvg) {
+		} else if (name === 'class' && !isSvg) {
 			node.className = value || '';
-		}
- else if (name === 'style') {
+		} else if (name === 'style') {
 			if (!value || typeof value === 'string' || typeof old === 'string') { // 老的是字符串，新的是对象；这基本等于没啥用
 				node.style.cssText = value || '';
 			}
-			if (value && typeof value === 'object') {   // 老的有，新的没有；就设置为空串
+			if (value && typeof value === 'object') { // 老的有，新的没有；就设置为空串
 				if (typeof old !== 'string') {
 					for (var i in old) {
 						if (!(i in value)) node.style[i] = '';
 					}
 				}
-				for (var i in value) {      // 新的所有的都重新设置
+				for (var i in value) { // 新的所有的都重新设置
 					node.style[i] = typeof value[i] === 'number' && IS_NON_DIMENSIONAL.test(i) === false ? value[i] + 'px' : value[i];
 				}
 			}
-		}
- else if (name === 'dangerouslySetInnerHTML') {
+		} else if (name === 'dangerouslySetInnerHTML') {
 			if (value) node.innerHTML = value.__html || '';
-		}
- else if (name[0] == 'o' && name[1] == 'n') {
+		} else if (name[0] == 'o' && name[1] == 'n') {
 			let useCapture = name !== (name = name.replace(/Capture$/, ''));
 			name = name.toLowerCase().substring(2);
 			if (value) {
-				if (!old) node.addEventListener(name, eventProxy, useCapture);      // 有新的，没有老的
-			}
- else {
-				node.removeEventListener(name, eventProxy, useCapture);     // 没有新的，可能有老的；可能没有老的
+				if (!old) node.addEventListener(name, eventProxy, useCapture); // 有新的，没有老的
+			} else {
+				node.removeEventListener(name, eventProxy, useCapture); // 没有新的，可能有老的；可能没有老的
 			}
 			(node._listeners || (node._listeners = {}))[name] = value; // 新的，老的都有的话只替换函数；不改变属性
-		}
- else if (name !== 'list' && name !== 'type' && !isSvg && name in node) {  // list和type为什么要特殊处理？
+		} else if (name !== 'list' && name !== 'type' && !isSvg && name in node) { // list和type为什么要特殊处理？
 			setProperty(node, name, value == null ? '' : value);
 			if (value == null || value === false) node.removeAttribute(name);
-		}
- else {
+		} else {
 			let ns = isSvg && name !== (name = name.replace(/^xlink\:?/, ''));
 			if (value == null || value === false) {
-				if (ns) node.removeAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase());else node.removeAttribute(name);
-			}
- else if (typeof value !== 'function') {
-				if (ns) node.setAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase(), value);else node.setAttribute(name, value);
+				if (ns) node.removeAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase());
+				else node.removeAttribute(name);
+			} else if (typeof value !== 'function') {
+				if (ns) node.setAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase(), value);
+				else node.setAttribute(name, value);
 			}
 		}
 	}
@@ -318,8 +311,7 @@
 	function setProperty(node, name, value) {
 		try {
 			node[name] = value;
-		}
- catch (e) {}
+		} catch (e) {}
 	}
 
 	/** Proxy an event to hooked event handlers
@@ -376,7 +368,7 @@
 		if (parent && ret.parentNode !== parent) parent.appendChild(ret);
 
 		// diffLevel being reduced to 0 means we're exiting the diff
-		if (! --diffLevel) {
+		if (!--diffLevel) {
 			hydrating = false;
 			// invoke queued componentDidMount lifecycle methods
 			if (!componentRoot) flushMounts();
@@ -393,7 +385,7 @@
 		let out = dom,
 			prevSvgMode = isSvgMode;
 
-			// empty values (null, undefined, booleans) render as empty Text nodes
+		// empty values (null, undefined, booleans) render as empty Text nodes
 		if (vnode == null || typeof vnode === 'boolean') vnode = '';
 
 		// Fast case: Strings & Numbers create/update Text nodes.
@@ -402,12 +394,12 @@
 
 			// update if it's already a Text node:
 			if (dom && dom.splitText !== undefined && dom.parentNode && (!dom._component || componentRoot)) {
-				/* istanbul ignore if */ /* Browser quirk that can't be covered: https://github.com/developit/preact/commit/fd4f21f5c45dfd75151bd27b4c217d8003aa5eb9 */
+				/* istanbul ignore if */
+				/* Browser quirk that can't be covered: https://github.com/developit/preact/commit/fd4f21f5c45dfd75151bd27b4c217d8003aa5eb9 */
 				if (dom.nodeValue != vnode) {
 					dom.nodeValue = vnode;
 				}
-			}
- else {
+			} else {
 				// it wasn't a Text node: replace it with one and recycle the old Element
 				out = document.createTextNode(vnode);
 				if (dom) {
@@ -444,14 +436,14 @@
 				if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
 
 				// recycle the old element (skips non-Element node types)
-				recollectNodeTree(dom, true);   //已经替换掉了，这一步有什么用?
+				recollectNodeTree(dom, true); //已经替换掉了，这一步有什么用?
 			}
 		}
 		// 这个时候子节点应该都没东西才对，因为out是刚创建的
 		let fc = out.firstChild,
 			props = out.__preactattr_,
 			vchildren = vnode.children;
-			// 把dom节点的attributes都放在了dom['__preactattr_']上
+		// 把dom节点的attributes都放在了dom['__preactattr_']上
 		if (props == null) {
 			props = out.__preactattr_ = {};
 			for (let a = out.attributes, i = a.length; i--;) {
@@ -502,7 +494,7 @@
 			vchild,
 			child;
 
-			// Build up a map of keyed children and an Array of unkeyed children:
+		// Build up a map of keyed children and an Array of unkeyed children:
 		if (len !== 0) {
 			for (var i = 0; i < len; i++) {
 				var _child = originalChildren[i],
@@ -511,8 +503,7 @@
 				if (key != null) {
 					keyedLen++;
 					keyed[key] = _child;
-				}
- else if (props || (_child.splitText !== undefined ? isHydrating ? _child.nodeValue.trim() : true : isHydrating)) {
+				} else if (props || (_child.splitText !== undefined ? isHydrating ? _child.nodeValue.trim() : true : isHydrating)) {
 					children[childrenLen++] = _child;
 				}
 			}
@@ -541,8 +532,8 @@
 						if (children[j] !== undefined && isSameNodeType(c = children[j], vchild, isHydrating)) {
 							child = c;
 							children[j] = undefined;
-							if (j === childrenLen - 1) childrenLen--;  // 如果j是最后一位，就直接删除了
-							if (j === min) min++;   // 改变min  应该不需要判断
+							if (j === childrenLen - 1) childrenLen--; // 如果j是最后一位，就直接删除了
+							if (j === min) min++; // 改变min  应该不需要判断
 							break;
 						}
 					}
@@ -554,11 +545,9 @@
 				if (child && child !== dom && child !== f) {
 					if (f == null) {
 						dom.appendChild(child);
-					}
- else if (child === f.nextSibling) {
-						removeNode(f);           // 因为f有nextSibling,所以可以直接删除
-					}
- else {
+					} else if (child === f.nextSibling) {
+						removeNode(f); // 因为f有nextSibling,所以可以直接删除
+					} else {
 						dom.insertBefore(child, f);
 					}
 				}
@@ -586,16 +575,15 @@
 	 */
 	function recollectNodeTree(node, unmountOnly) { // 卸载dom树,卸载上层的节点后;它的孩子应该都没调用removeNode
 		let component = node._component;
-		if (component) {    // 如果有子组件，就卸载子组件；在组件中卸载组件之后，会把这个节点和它的孩子都卸载掉的
+		if (component) { // 如果有子组件，就卸载子组件；在组件中卸载组件之后，会把这个节点和它的孩子都卸载掉的
 			// if node is owned by a Component, unmount that component (ends up recursing back here)
 			unmountComponent(component);
-		}
- else {
+		} else {
 			// If the node's VNode had a ref function, invoke it with null here.
 			// (this is part of the React spec, and smart for unsetting references)
 			if (node.__preactattr_ != null && node.__preactattr_.ref) node.__preactattr_.ref(null);
 
-			if (unmountOnly === false || node.__preactattr_ == null) {   // 这个节点不是组件根节点的情况下，就不做卸载处理；所以removechildren中传递的true可能是没用的
+			if (unmountOnly === false || node.__preactattr_ == null) { // 这个节点不是组件根节点的情况下，就不做卸载处理；所以removechildren中传递的true可能是没用的
 				removeNode(node);
 			}
 
@@ -614,7 +602,7 @@
 		node = node.lastChild;
 		while (node) {
 			let next = node.previousSibling;
-			recollectNodeTree(node, true);  //没看懂为什么用true
+			recollectNodeTree(node, true); //没看懂为什么用true
 			node = next;
 		}
 	}
@@ -629,7 +617,7 @@
 
 		// remove attributes no longer present on the vnode by setting them to undefined
 		for (name in old) {
-			if (!(attrs && attrs[name] != null) && old[name] != null) {     // 没有新的或新的不存在，老的有，删除老的
+			if (!(attrs && attrs[name] != null) && old[name] != null) { // 没有新的或新的不存在，老的有，删除老的
 				setAccessor(dom, name, old[name], old[name] = undefined, isSvgMode);
 			}
 		}
@@ -651,7 +639,7 @@
 	/** Reclaim a component for later re-use by the recycler. */
 	// 卸载的时候收集   在什么时候重新利用的？
 	function collectComponent(component) {
-		let name = component.constructor.name;  // 这个时候props和state还在，所以重新利用的时候是怎么回事？
+		let name = component.constructor.name; // 这个时候props和state还在，所以重新利用的时候是怎么回事？
 		(components[name] || (components[name] = [])).push(component);
 	}
 
@@ -665,8 +653,7 @@
 		if (Ctor.prototype && Ctor.prototype.render) {
 			inst = new Ctor(props, context);
 			Component.call(inst, props, context); // 开发者忘继承了，帮你继承一下。
-		}
- else { // 对应函数组件的方法吗？
+		} else { // 对应函数组件的方法吗？
 			inst = new Component(props, context);
 			inst.constructor = Ctor;
 			inst.render = doRender;
@@ -674,8 +661,7 @@
 
 		if (list) {
 			for (let i = list.length; i--;) {
-				if (list[i].constructor === Ctor) {
-					;    // 想看一下此时dom上preact添加的属性是否已经清空？比如dom._component dom['__preact_']
+				if (list[i].constructor === Ctor) {; // 想看一下此时dom上preact添加的属性是否已经清空？比如dom._component dom['__preact_']
 					inst.nextBase = list[i].nextBase;
 					list.splice(i, 1);
 					break;
@@ -703,28 +689,26 @@
 		if (component.__ref = props.ref) delete props.ref;
 		if (component.__key = props.key) delete props.key;
 		// 如果组件没有被渲染过，或者确定要自上而下要完全重新渲染
-		if (!component.base || mountAll) {  // 这两个生命周期钩子会比shouldComponentUpdate, 11111
+		if (!component.base || mountAll) { // 这两个生命周期钩子会比shouldComponentUpdate, 11111
 			if (component.componentWillMount) component.componentWillMount();
-		}
- else if (component.componentWillReceiveProps) {
+		} else if (component.componentWillReceiveProps) {
 			component.componentWillReceiveProps(props, context);
 		}
 
 		if (context && context !== component.context) {
-			if (!component.prevContext) component.prevContext = component.context;  // 如果先前有prevContext,这里就不更新了吗？为什么？
+			if (!component.prevContext) component.prevContext = component.context; // 如果先前有prevContext,这里就不更新了吗？为什么？
 			component.context = context;
 		}
 		// 可能是第一次渲染，也可能是回收；再渲染的
 		if (!component.prevProps) component.prevProps = component.props; // 如果先前有prevProps,这里就不在更新了；为什么？
-		component.props = props;        // 直接更改props的指针
+		component.props = props; // 直接更改props的指针
 
 		component._disable = false;
 
 		if (opts !== 0) {
 			if (opts === 1 || options.syncComponentUpdates !== false || !component.base) {
 				renderComponent(component, 1, mountAll);
-			}
- else {
+			} else {
 				enqueueRender(component);
 			}
 		}
@@ -740,9 +724,9 @@
 	 */
 	// 写出这个函数大体做了什么
 	function renderComponent(component, opts, mountAll, isChild) {
-		if (component._disable) return;     // _disable判断组件是否能render
+		if (component._disable) return; // _disable判断组件是否能render
 
-		if (mountAll){
+		if (mountAll) {
 			// debugger // 看看什么情况下mountAll为true
 		}
 
@@ -752,24 +736,23 @@
 			previousProps = component.prevProps || props,
 			previousState = component.prevState || state,
 			previousContext = component.prevContext || context,
-			isUpdate = component.base,                  // 当前组件dom已经被渲染
-			nextBase = component.nextBase,              // nextBase应该是在unmountComponent中被创建的
-			initialBase = isUpdate || nextBase,            // component.base || component.nextBase
-			initialChildComponent = component._component,   // 指向根子组件的实例
-			skip = false,                                       //控制是否执行render方法
+			isUpdate = component.base, // 当前组件dom已经被渲染
+			nextBase = component.nextBase, // nextBase应该是在unmountComponent中被创建的
+			initialBase = isUpdate || nextBase, // component.base || component.nextBase
+			initialChildComponent = component._component, // 指向根子组件的实例
+			skip = false, //控制是否执行render方法
 			rendered,
 			inst,
 			cbase;
 
-			// 组件是否已经创建过, 判断skip; 或者调用component.componentWillUpdate
+		// 组件是否已经创建过, 判断skip; 或者调用component.componentWillUpdate
 		if (isUpdate) {
-			component.props = previousProps;        // 如果是已经创建过的先回退props state  context
+			component.props = previousProps; // 如果是已经创建过的先回退props state  context
 			component.state = previousState;
 			component.context = previousContext;
-			if (opts !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state, context) === false) {    // 在哪里调用componentWillReceiveProps了？
+			if (opts !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state, context) === false) { // 在哪里调用componentWillReceiveProps了？
 				skip = true;
-			}
- else if (component.componentWillUpdate) {
+			} else if (component.componentWillUpdate) {
 				component.componentWillUpdate(props, state, context);
 			}
 			component.props = props;
@@ -781,11 +764,11 @@
 		component._dirty = false;
 
 		if (!skip) {
-			rendered = component.render(props, state, context);  // 拿到包括子虚拟dom树
+			rendered = component.render(props, state, context); // 拿到包括子虚拟dom树
 
 			// context to pass to the child, can be updated via (grand-)parent component
 			if (component.getChildContext) {
-				context = extend(extend({}, context), component.getChildContext());     // 合并父组件和子组件共有的context
+				context = extend(extend({}, context), component.getChildContext()); // 合并父组件和子组件共有的context
 			}
 
 			let childComponent = rendered && rendered.nodeName,
@@ -795,73 +778,70 @@
 			if (typeof childComponent === 'function') {
 				// set up high order component link
 				let childProps = getNodeProps(rendered);
-				inst = initialChildComponent;           // component._component
+				inst = initialChildComponent; // component._component
 
-				if (inst && inst.constructor === childComponent && childProps.key == inst.__key) {  // 只判断构造函数不够吗？为什么需要判断key?
+				if (inst && inst.constructor === childComponent && childProps.key == inst.__key) { // 只判断构造函数不够吗？为什么需要判断key?
 					setComponentProps(inst, childProps, 1, context, false);
-				}
- else {    // 变了就重新创建实例，设置实例的nextBase;设置实例的_parentComponent;设置实例的属性，然后渲染
+				} else { // 变了就重新创建实例，设置实例的nextBase;设置实例的_parentComponent;设置实例的属性，然后渲染
 					toUnmount = inst;
 
 					component._component = inst = createComponent(childComponent, childProps, context); // 创建子组件，并挂载在component._component上
-					inst.nextBase = inst.nextBase || nextBase;      // 创建组件的时候会创建nextBase？//nextBase到底是干嘛用的?
-					inst._parentComponent = component;              // 实例的父组件指向_parentComponent, 所以_component与_parentComponent分别的作用是什么？
+					inst.nextBase = inst.nextBase || nextBase; // 创建组件的时候会创建nextBase？//nextBase到底是干嘛用的?
+					inst._parentComponent = component; // 实例的父组件指向_parentComponent, 所以_component与_parentComponent分别的作用是什么？
 					setComponentProps(inst, childProps, 0, context, false);
 					console.log('mountAll', mountAll);
 					renderComponent(inst, 1, mountAll, true);
 				}
 
-				base = inst.base;                       // 将base设置为子组件的base
-			}
- else {
+				base = inst.base; // 将base设置为子组件的base
+			} else {
 				cbase = initialBase;
 
 				// destroy high order component link
-				toUnmount = initialChildComponent;  // component._component
-				if (toUnmount) {                    // 从组件替换为dom节点了
-					cbase = component._component = null;    //如果以前的子是一个组件cbase就没什么用了
+				toUnmount = initialChildComponent; // component._component
+				if (toUnmount) { // 从组件替换为dom节点了
+					cbase = component._component = null; //如果以前的子是一个组件cbase就没什么用了
 				}
 
-				if (initialBase || opts === 1) {    // 渲染dom节点
+				if (initialBase || opts === 1) { // 渲染dom节点
 					if (cbase) cbase._component = null;
 					// 应该是这个地方创建出完整的节点及子节点，所以这个地方第一次渲染的时候mountAll会为true
 					base = diff(cbase, rendered, context, mountAll || !isUpdate, initialBase && initialBase.parentNode, true);
 				}
 			}
 			// 子组件不管是组件还是dom节点都要经历的过程
-			if (initialBase && base !== initialBase && inst !== initialChildComponent) {   // 新渲染出的东西与老的有变化？ inst !== initialChildComponent这句判断感觉没什么必要
+			if (initialBase && base !== initialBase && inst !== initialChildComponent) { // 新渲染出的东西与老的有变化？ inst !== initialChildComponent这句判断感觉没什么必要
 				let baseParent = initialBase.parentNode;
 				if (baseParent && base !== baseParent) {
-					baseParent.replaceChild(base, initialBase);     // 替换两个节点
+					baseParent.replaceChild(base, initialBase); // 替换两个节点
 
 					if (!toUnmount) {
-						initialBase._component = null;              // 切断老节点与子节点的关系
-						recollectNodeTree(initialBase, false);      // 回收老的节点
+						initialBase._component = null; // 切断老节点与子节点的关系
+						recollectNodeTree(initialBase, false); // 回收老的节点
 					}
 				}
 			}
 
-			if (toUnmount) {        // 子组件如果是一个组件的话就调用
+			if (toUnmount) { // 子组件如果是一个组件的话就调用
 				unmountComponent(toUnmount);
 			}
 
-			component.base = base;  // base是渲染出的dom
+			component.base = base; // base是渲染出的dom
 
 			if (base && !isChild) {
 				let componentRef = component,
 					t = component;
-				while (t = t._parentComponent) {    // 有父组件的话，向上回溯；将每一个父组件的base设置为当前的base
+				while (t = t._parentComponent) { // 有父组件的话，向上回溯；将每一个父组件的base设置为当前的base
 					(componentRef = t).base = base;
 				}
-				base._component = componentRef;     // 所以base的_component也指向最上方的constructor
-				base._componentConstructor = componentRef.constructor;  // base的_componentConstructor指向最上方组件的constructor
+				base._component = componentRef; // 所以base的_component也指向最上方的constructor
+				base._componentConstructor = componentRef.constructor; // base的_componentConstructor指向最上方组件的constructor
 			}
 		}
 
-		if (!isUpdate || mountAll) {            // 保存组件到一个数组，以便同时执行componentDidMount   222222
-			mounts.unshift(component);          // 在flushMounts里面是pop,当前先进的先执行；保证了先执行父亲，再执行孩子
-		}
- else if (!skip) {
+		if (!isUpdate || mountAll) { // 保存组件到一个数组，以便同时执行componentDidMount   222222
+			mounts.unshift(component); // 在flushMounts里面是pop,当前先进的先执行；保证了先执行父亲，再执行孩子
+		} else if (!skip) {
 			// Ensure that pending componentDidMount() hooks of child components
 			// are called before the componentDidUpdate() hook in the parent.
 			// Note: disabled as it causes duplicate hooks, see https://github.com/developit/preact/issues/750
@@ -879,7 +859,7 @@
 			}
 		}
 
-		if (!diffLevel && !isChild) flushMounts();          // 判断diff是不是到了最后，最后的话标记为0
+		if (!diffLevel && !isChild) flushMounts(); // 判断diff是不是到了最后，最后的话标记为0
 	}
 
 	/** Apply the Component referenced by a VNode to the DOM.
@@ -894,7 +874,7 @@
 		let c = dom && dom._component,
 			originalComponent = c,
 			oldDom = dom,
-			isDirectOwner = c && dom._componentConstructor === vnode.nodeName,  // 组件类型是否变了
+			isDirectOwner = c && dom._componentConstructor === vnode.nodeName, // 组件类型是否变了
 			isOwner = isDirectOwner,
 			props = getNodeProps(vnode);
 
@@ -902,11 +882,10 @@
 			isOwner = c.constructor === vnode.nodeName;
 		}
 		// mountAll为false，或者c._component存在，就直接设置props
-		if (c && isOwner && (!mountAll || c._component)) {  // 如果组件类型相同，只设置属性；然后更改c.base，dom._component怎么办？33333
+		if (c && isOwner && (!mountAll || c._component)) { // 如果组件类型相同，只设置属性；然后更改c.base，dom._component怎么办？33333
 			setComponentProps(c, props, 3, context, mountAll);
 			dom = c.base;
-		}
- else {
+		} else {
 			if (originalComponent && !isDirectOwner) {
 				unmountComponent(originalComponent);
 				dom = oldDom = null;
@@ -938,28 +917,27 @@
 	function unmountComponent(component) {
 		if (options.beforeUnmount) options.beforeUnmount(component);
 
-		let base = component.base;  //component.base是离组件最近的dom节点
+		let base = component.base; //component.base是离组件最近的dom节点
 
-		component._disable = true;  // 已经卸载过的组件不在让渲染了。
+		component._disable = true; // 已经卸载过的组件不在让渲染了。
 
 		if (component.componentWillUnmount) component.componentWillUnmount();
 
 		component.base = null;
 
 		// recursively tear down & recollect high-order component children:
-		let inner = component._component;   // 指向子组件的实例， 只可能有一个根组件
-		if (inner) {            // 如果孩子是子组件的话，只要向下递归的卸载子组件就好了
+		let inner = component._component; // 指向子组件的实例， 只可能有一个根组件
+		if (inner) { // 如果孩子是子组件的话，只要向下递归的卸载子组件就好了
 			unmountComponent(inner);
-		}
- else if (base) {
+		} else if (base) {
 			if (base.__preactattr_ && base.__preactattr_.ref) base.__preactattr_.ref(null);
 
-			component.nextBase = base;  // 卸载一个组件后，设置了组件的nextBase为base；应该和回收后，再利用有关
+			component.nextBase = base; // 卸载一个组件后，设置了组件的nextBase为base；应该和回收后，再利用有关
 
-			removeNode(base);    // 为什么不是直接调用remove整个tree？
+			removeNode(base); // 为什么不是直接调用remove整个tree？
 			collectComponent(component);
 
-			removeChildren(base);   // 孩子往下如果有组件就会被卸载，否则没啥用
+			removeChildren(base); // 孩子往下如果有组件就会被卸载，否则没啥用
 		}
 
 		if (component.__ref) component.__ref(null);
@@ -980,63 +958,63 @@
 		this._dirty = true;
 
 		/** @public
-		*	@type {object}
-		*/
+		 *	@type {object}
+		 */
 		this.context = context;
 
 		/** @public
-		*	@type {object}
-		*/
+		 *	@type {object}
+		 */
 		this.props = props;
 
 		/** @public
-		*	@type {object}
-		*/
+		 *	@type {object}
+		 */
 		this.state = this.state || {};
 	}
 
 	extend(Component.prototype, {
 
 		/** Returns a `boolean` indicating if the component should re-render when receiving the given `props` and `state`.
-		*	@param {object} nextProps
-		*	@param {object} nextState
-		*	@param {object} nextContext
-		*	@returns {Boolean} should the component re-render
-		*	@name shouldComponentUpdate
-		*	@function
-		*/
+		 *	@param {object} nextProps
+		 *	@param {object} nextState
+		 *	@param {object} nextContext
+		 *	@returns {Boolean} should the component re-render
+		 *	@name shouldComponentUpdate
+		 *	@function
+		 */
 
 		/** Update component state by copying properties from `state` to `this.state`.
-		*	@param {object} state		A hash of state properties to update with new values
-		*	@param {function} callback	A function to be called once component state is updated
-		*/
+		 *	@param {object} state		A hash of state properties to update with new values
+		 *	@param {function} callback	A function to be called once component state is updated
+		 */
 		setState: function setState(state, callback) {
 			let s = this.state;
 			if (!this.prevState) this.prevState = extend({}, s);
 			extend(s, typeof state === 'function' ? state(s, this.props) : state);
-			if (callback) (this._renderCallbacks = this._renderCallbacks || []).push(callback);
+			if (callback)(this._renderCallbacks = this._renderCallbacks || []).push(callback);
 			enqueueRender(this);
 		},
 
 
 		/** Immediately perform a synchronous re-render of the component.
-		*	@param {function} callback		A function to be called after component is re-rendered.
-		*	@private
-		*/
+		 *	@param {function} callback		A function to be called after component is re-rendered.
+		 *	@private
+		 */
 		forceUpdate: function forceUpdate(callback) {
 			console.log('forceUpdate');
-			if (callback) (this._renderCallbacks = this._renderCallbacks || []).push(callback);
+			if (callback)(this._renderCallbacks = this._renderCallbacks || []).push(callback);
 			renderComponent(this, 2);
 		},
 
 
 		/** Accepts `props` and `state`, and returns a new Virtual DOM tree to build.
-		*	Virtual DOM is generally constructed via [JSX](http://jasonformat.com/wtf-is-jsx).
-		*	@param {object} props		Props (eg: JSX attributes) received from parent element/component
-		*	@param {object} state		The component's current state
-		*	@param {object} context		Context object (if a parent component has provided context)
-		*	@returns VNode
-		*/
+		 *	Virtual DOM is generally constructed via [JSX](http://jasonformat.com/wtf-is-jsx).
+		 *	@param {object} props		Props (eg: JSX attributes) received from parent element/component
+		 *	@param {object} state		The component's current state
+		 *	@param {object} context		Context object (if a parent component has provided context)
+		 *	@returns VNode
+		 */
 		render: function render() {}
 	});
 
@@ -1069,6 +1047,7 @@
 		options
 	};
 
-	if (typeof module !== 'undefined') module.exports = preact;else self.preact = preact;
+	if (typeof module !== 'undefined') module.exports = preact;
+	else self.preact = preact;
 }());
 //# sourceMappingURL=preact.dev.js.map

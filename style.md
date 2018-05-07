@@ -21,6 +21,8 @@ fiber需要做的：
 一个fiber描述了一单元的工作
 
 
+fiber是调用栈的重新实现
+
 ## react事件系统 ##
 
 react中所有的事件是挂载的document上的，这样做的好处有：
@@ -37,3 +39,12 @@ react中所有的事件是挂载的document上的，这样做的好处有：
 - 如何绑定事件
 - 如何触发事件
 - 如何处理事件对象
+
+
+## preact diffchildren ##
+
+- 遍历dom原本的childNodes,构造出一个map keyed，构造出一个children
+- 遍历vchildren,通过key或者相同类型，拿到child（真实dom）
+- 将这个child与vchild做一个diff,拿到修改后的dom节点
+- 然后判断执行三种可能的操作，dom.appendChild,removeNode,dom.insertBefore
+- 然后将keyedLen中和children中多余的删除掉

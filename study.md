@@ -172,7 +172,27 @@ context在renderComponent与setComponentProps中处理，大致是diff的时候�
 ###preact的数据结构
 
 - component.base是对应dom节点
+- dom._component对应的是component
 
+component {
+  base,
+  _parentComponent,
+  _component           // 最近的子组件
+}
+
+dom {
+  _component, // 可能是指向最上方的父组件
+}
+
+如以下示例，a._component = b,a.base = $('#child'), $('#child')._component = a
+
+<A>
+  <B>
+    <C>
+      <div id="child"></div>
+    </C>
+  </B>
+</A>
 
 
 ###待做
@@ -180,3 +200,119 @@ context在renderComponent与setComponentProps中处理，大致是diff的时候�
 - this.props为undefined，要学习它的renderComponent方法
 - 所有卸载相关的内容（待）
 - setState之后的流程
+
+## preact源码阅读 ##
+
+### idiff函数 ###
+
+接收dom与vnode，返回diff过的dom，然后由diff加入到dom中。
+
+- 处理字符串
+  - 有dom元素，改nodeValue
+  - 根据vnode创建dom
+
+- 处理组件（个人理解）
+  - 比较类型是否一样，类型不相同，就重新创建组件，执行组件相应的生命周期钩子
+  - 类型如果相同，就修改组件的属性，执行相应的生命周期钩子
+  - 渲染组件
+    - 判断是否需要render
+    - 执行component.render
+      - 如果直接子元素仍是一个组件
+      - 如果直接子元素是dom节点
+        - 通过diff拿到相应的dom节点
+        - 替换dom节点
+        - 回收老的dom节点，卸载不用的组件
+  - 执行渲染后的生命周期钩子
+
+- 处理element元素
+  - 创建dom元素，把老的dom元素下的childNodes挂载的新的dom元素下（为了进行diffChildren） 
+  - 将out attributes都挂载到dom['__preactattr_']
+  - innerDiffNode
+  - diffAttributes
+
+## enqueueRender ##
+
+  推迟组件的渲染时机，等所有代码执行完，再批量执行组件渲染。
+
+## preact的事件处理方式 ##
+
+为每个节点只添加一次事件处理函数
+
+```
+if(!oldValue) node.addEventListener(name, eventType, useCapture)
+
+(node._listaners || node._listeners = {})[name] = value
+```
+
+## 对ref的处理 ##
+
+## _dirty的作用是什么 ##
+
+初始的时候_dirty为true
+
+enqueueRender的时候_dirty会置为true
+
+_dirty为true的时候才会执行renderComponent
+
+render组件期间_dirty为false
+
+作用应该是避免enqueueRender组件两次
+
+## 对回收的处理 ##
+
+### unmountComponent ###
+
+- 执行生命周期钩子
+- 如果孩子是组件的话，继续递归卸载
+- 如果孩子是dom的话
+  
+
+### unmountDom ###
+
+
+综上，可以看到在组件回收的时候，组件实例放入到了components这个map对应的数组里，实例上有nextBase,nextBase保留了整个dom树的状态
+
+在createComponent的时候，重新找到nextBase，然后给inst.nextBase
+
+在renderComponent的时候，调用component.render后，会用rendered与nextBase比较，返回生成的比较之后的dom节点,节省了dom节点的创建处理时间？？？
+
+
+## 对setState的处理 ##
+
+## forceUpdate与异步渲染的处理 ## 
+
+即opts === 2 || opts === 3
+
+## enqueueRender ##
+
+```
+let items = []
+function enqueueRender(component){
+  if(!component._dirty){
+    defer(renderer)
+  }
+}
+
+function renderer(){
+  let c = null
+  while(c = items.pop()){
+    if(c._dirty) renderComponent(c)
+  }
+}
+```
+
+## 对函数组件的处理 ##
+
+没有继承Component，是怎么处理的？
+
+## 对HOC的处理 ##
+
+## 服务端渲染是怎么处理的  ##
+
+## 谈谈preact的可拓展性 ##
+
+通过options暴露了很多钩子
+
+
+
+

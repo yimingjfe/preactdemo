@@ -1,9 +1,7 @@
 /* eslint-disable */
 /** @jsx Didact.createElement */
-
-import importFromBelow from './MyReact3';
-
-const Didact = importFromBelow();
+import Didact from './MyReact3'
+// import Didact from '../preact.dev.js'
 
 const stories = [
 	{ name: 'Didact introduction', url: 'http://bit.ly/2pX7HNn' },
@@ -32,7 +30,6 @@ class Story extends Didact.Component {
 		this.state = { likes: Math.ceil(Math.random() * 100) };
 	}
 	like() {
-		console.log('like')
 		this.setState({
 			likes: this.state.likes + 1
 		});

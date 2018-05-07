@@ -20,4 +20,31 @@ fiber需要做的：
 
 一个fiber描述了一单元的工作
 
+
 fiber是调用栈的重新实现
+
+## react事件系统 ##
+
+react中所有的事件是挂载的document上的，这样做的好处有：
+
+- 处理了ie的兼容性问题
+- 绑定事件是相当的慢和消耗内存的
+
+每个react组件都有一个id，通过子id能找到父id，通过存储事件在一个hashmap上与id相对应
+
+对于事件对象，每次创建对象意味着大量的内存分配，react在初始的时候会分配一个对象池，无论什么时候当你需要的时候，会从对象池中复用。这可以显著减少垃圾回收。
+
+总结做了三件事：
+
+- 如何绑定事件
+- 如何触发事件
+- 如何处理事件对象
+
+
+## preact diffchildren ##
+
+- 遍历dom原本的childNodes,构造出一个map keyed，构造出一个children
+- 遍历vchildren,通过key或者相同类型，拿到child（真实dom）
+- 将这个child与vchild做一个diff,拿到修改后的dom节点
+- 然后判断执行三种可能的操作，dom.appendChild,removeNode,dom.insertBefore
+- 然后将keyedLen中和children中多余的删除掉

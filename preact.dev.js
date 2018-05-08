@@ -439,7 +439,7 @@
 				recollectNodeTree(dom, true); //已经替换掉了，这一步有什么用?
 			}
 		}
-		// 这个时候子节点应该都没东西才对，因为out是刚创建的
+
 		let fc = out.firstChild,
 			props = out.__preactattr_,
 			vchildren = vnode.children;
@@ -451,7 +451,7 @@
 			}
 		}
 
-		// 如果vchildren只有一个节点，且是textnode节点时的优化
+		// 如果vchildren只有一个节点，且是textnode节点时,直接更改nodeValue，优化性能
 		// Optimization: fast-path for elements containing a single TextNode:
 		if (!hydrating && vchildren && vchildren.length === 1 && typeof vchildren[0] === 'string' && fc != null && fc.splitText !== undefined && fc.nextSibling == null) {
 			if (fc.nodeValue != vchildren[0]) {
@@ -668,6 +668,7 @@
 				}
 			}
 		}
+
 		return inst;
 	}
 
@@ -852,7 +853,8 @@
 			}
 			if (options.afterUpdate) options.afterUpdate(component);
 		}
-
+		
+		// 调用setState时加入的回调
 		if (component._renderCallbacks != null) {
 			while (component._renderCallbacks.length) {
 				component._renderCallbacks.pop().call(component);
@@ -892,6 +894,7 @@
 			}
 
 			c = createComponent(vnode.nodeName, props, context);
+			
 			if (dom && !c.nextBase) {
 				c.nextBase = dom;
 				// passing dom/oldDom as nextBase will recycle it if unused, so bypass recycling on L229:
@@ -905,7 +908,7 @@
 				recollectNodeTree(oldDom, false);
 			}
 		}
-
+		console.log('createComponent', c)
 		return dom;
 	}
 

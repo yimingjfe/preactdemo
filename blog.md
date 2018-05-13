@@ -272,7 +272,7 @@ renderComponent主要逻辑为：
 - 为组件的base添加组件引用_component
 - 调用组件的生命周期钩子componentDidUpdate，componentDidMount
 
-至此，我们已经大致了解了preact的大致全流程，接下来我们看一下它的diff算法，要学习diff算法，我们首先要知道react diff算法的前提。
+至此，我们已经大致了解了preact的大致全流程，接下来我们看一下它的diffChildren的算法，要学习diff算法，我们首先要知道react diff算法的前提。
 
 传统的diff两颗树的时间复杂度为O(n^3),而react中的diff算法是O(n)，基于以下前提：
 
@@ -282,6 +282,37 @@ renderComponent主要逻辑为：
 
 接下来我们看以下preact中是如何diffChildren的：
 
+- 将原始dom的子节点分为两部分，有key的放在keyed map里面，没有key的放在children数组里面。
+- 遍历vchildren,通过key找到keyed中的child，如果child不存在，从children中取出相同类型的子节点
+- 对child与vchild进行diff，此时得到的dom节点就是新的dom节点
+- 然后与老的dom节点对应的节点比较，
+
+preact相邻节点互换的话，性能比较低，因为第一个节点被删除了
+
+### react的diffChildren算法 ###
+
+a   b   c    d
+
+b   e    d   c
+
+遍历新的虚拟dom节点，找到对应的老的虚拟dom节点，此时lastIndex为0，所以不做任何操作，遍历到新的虚拟dom节点a，找到老的虚拟dom节点a，此时mountIndex < lastIndex,所以将a移动到b的后面。如果遇到新增的节点直接新增，最后删除那些没有被标记的节点。
+
+### vue的diffChildren算法 ###
+
+- 头部相同，尾部相同
+- 头部与尾部相同
+- 新增节点
+- 需要删除的节点
+- 其他节点： 3  4  5  6  7
+
+a b f  g
+                b   f   g     b   a   f   g     b  a  g
+b a g  f
+
+
+a  d   e
+                b   a   d   e       b   e   a   d
+b  e   a
 
 
 

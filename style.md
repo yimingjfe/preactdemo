@@ -48,3 +48,8 @@ react中所有的事件是挂载的document上的，这样做的好处有：
 - 将这个child与vchild做一个diff,拿到修改后的dom节点
 - 然后判断执行三种可能的操作，dom.appendChild,removeNode,dom.insertBefore
 - 然后将keyedLen中和children中多余的删除掉
+
+
+## react中的diff ##
+
+key是一个新旧节点的标识，lastIndex表示访问过的节点在老集合中最右的位置（即最大位置），遍历虚拟dom节点，找到老的dom树对应的节点，比较该dom节点的mountIndex与当前lastIndex，if(mountIndex > lastIndex)，即此时不动该节点不会影响其他节点，所以不做任何操作，否则移动该dom节点。

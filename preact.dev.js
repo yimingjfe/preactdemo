@@ -464,6 +464,7 @@
 		}
 
 		// Apply attributes/props from VNode to the DOM Element:
+		
 		diffAttributes(out, vnode.attributes, props);
 
 		// restore previous SVG mode: (in case we're exiting an SVG namespace)
@@ -547,7 +548,7 @@
 						dom.appendChild(child);
 					} else if (child === f.nextSibling) {
 						removeNode(f); // 因为f有nextSibling,所以可以直接删除
-					} else {
+					} else {	// 大部分的情况，没有上两种可能，就暗中啊vchildren的顺序放在最前面
 						dom.insertBefore(child, f);
 					}
 				}

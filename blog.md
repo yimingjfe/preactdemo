@@ -285,34 +285,179 @@ renderComponent主要逻辑为：
 - 将原始dom的子节点分为两部分，有key的放在keyed map里面，没有key的放在children数组里面。
 - 遍历vchildren,通过key找到keyed中的child，如果child不存在，从children中取出相同类型的子节点
 - 对child与vchild进行diff，此时得到的dom节点就是新的dom节点
-- 然后与老的dom节点对应的节点比较，
+- 然后与老的dom节点对应的节点比较，操作dom树。
+- 最后删除新的dom树中不存在的节点。
 
-preact相邻节点互换的话，性能比较低，因为第一个节点被删除了
+```
+function innerDiffNode(dom, vchildren, context, mountAll, isHydrating) {
+    let originalChildren = dom.childNodes,
+        children = [],
+        keyed = {},
+        keyedLen = 0,
+        min = 0,
+        len = originalChildren.length,
+        childrenLen = 0,
+        vlen = vchildren ? vchildren.length : 0,
+        j,
+        c,
+        f,
+        vchild,
+        child;
 
-### react的diffChildren算法 ###
+    if (len !== 0) {
+        for (var i = 0; i < len; i++) {
+            var _child = originalChildren[i],
+                props = _child.__preactattr_,
+                key = vlen && props ? _child._component ? _child._component.__key : props.key : null;
+            if (key != null) {
+                keyedLen++;
+                keyed[key] = _child;
+            } else if (props || (_child.splitText !== undefined ? isHydrating ? _child.nodeValue.trim() : true : isHydrating)) {
+                children[childrenLen++] = _child;
+            }
+        }
+    }
+    // 遍历虚拟dom节点
+    // 取child(有key,证明它两个是要对应比较的)
+    // 如果child和originchildren[i]比较
+    // originchild没有，多余，否则插入到originchild前面
+    if (vlen !== 0) {
+        for (var i = 0; i < vlen; i++) {
+            vchild = vchildren[i];
+            child = null;
 
-a   b   c    d
+            // attempt to find a node based on key matching
+            var key = vchild.key;
+            if (key != null) {
+                if (keyedLen && keyed[key] !== undefined) {
+                    child = keyed[key];
+                    keyed[key] = undefined;
+                    keyedLen--;
+                }
+            }
+            // attempt to pluck a node of the same type from the existing children
+            else if (!child && min < childrenLen) {
+                for (j = min; j < childrenLen; j++) { //从min往后开始遍历,如果是相同类型的节点就拿出来,那个位置设为undefined
+                    if (children[j] !== undefined && isSameNodeType(c = children[j], vchild, isHydrating)) {
+                        child = c;
+                        children[j] = undefined;
+                        if (j === childrenLen - 1) childrenLen--; 
+                        if (j === min) min++; 
+                        break;
+                    }
+                }
+            }
 
-b   e    d   c
+            // morph the matched/found/created DOM child to match vchild (deep)
+            child = idiff(child, vchild, context, mountAll);
+            f = originalChildren[i];
+            if (child && child !== dom && child !== f) {
+                if (f == null) {
+                    dom.appendChild(child);
+                } else if (child === f.nextSibling) {
+                    removeNode(f); 
+                } else {
+                    dom.insertBefore(child, f);
+                }
+            }
+        }
+    }
 
-遍历新的虚拟dom节点，找到对应的老的虚拟dom节点，此时lastIndex为0，所以不做任何操作，遍历到新的虚拟dom节点a，找到老的虚拟dom节点a，此时mountIndex < lastIndex,所以将a移动到b的后面。如果遇到新增的节点直接新增，最后删除那些没有被标记的节点。
+    // remove unused keyed children:
+    // keyedLen标识老的集合中还有的元素，但没在新的集合中使用
+    if (keyedLen) {
+        for (var i in keyed) {
+            if (keyed[i] !== undefined) recollectNodeTree(keyed[i], false);
+        }
+    }
 
-### vue的diffChildren算法 ###
+    // remove orphaned unkeyed children:
+    // min代表拿走的元素
+    while (min <= childrenLen) {
+        if ((child = children[childrenLen--]) !== undefined) recollectNodeTree(child, false);
+    }
+}
+```
 
-- 头部相同，尾部相同
-- 头部与尾部相同
-- 新增节点
-- 需要删除的节点
-- 其他节点： 3  4  5  6  7
+从上面可以看出，preact只处理了常见的使用场景，没有做特别的优化措施，这也导致它在一些情况下的性能比react低，如：从a b到b a。
+而react中会记录lastIndex,对其做了相应的优化，节点的Index > lastIndex的情况下，不做移动操作。
+但是如果react中有length > 2，最前面的节点位置与最后面的节点位置互换的情况下，由于index一直小于lastIndex,就会失去上述的优化效果。
+这种情况，在snabbdom中得到了优化，snabbdom通过oldStartIdx,oldEndIdx,newStartIdx,newEndIdx四个指针，在每次循环中优先处理特殊情况，并通过缩小指针范围，获得性能上的提升。
 
-a b f  g
-                b   f   g     b   a   f   g     b  a  g
-b a g  f
+## preact针对性能的优化 ##
+
+### 对回收的处理 ###
+
+在preact中，回收调用了两个方法，dom节点的回收一般会调用recollectNodeTree，组件的回收会调用unmountComponent。
+
+preact复用dom的秘密在于当要卸载一个组件的时候，只有组件的根节点会从父节点上卸载掉，组件完整的dom仍然存在，被卸载的组件会保存在components对象中。
+
+在创建组件的时候又通过nodeName拿到对应的dom节点树，挂载在组件实例的inst.nextBase上,在renderComponent的时候,再diff nextBase与新的虚拟dom树rendered。
+
+相关主要代码如下：
+
+```
+function createComponent(Ctor, props, context) {
+    let list = components[Ctor.name],
+        inst;
+
+    if (Ctor.prototype && Ctor.prototype.render) {
+        inst = new Ctor(props, context);
+        Component.call(inst, props, context); 
+    } else { // 对应函数组件
+        inst = new Component(props, context);
+        inst.constructor = Ctor;
+        inst.render = doRender;
+    }
+
+    if (list) {
+        for (let i = list.length; i--;) {
+            if (list[i].constructor === Ctor) {
+                inst.nextBase = list[i].nextBase;
+                list.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    return inst;
+}
+```
+
+## setState的处理 ##
+
+更改组件上的state,然后将要渲染的组件放在一个数组中，在下一次event loop的时候渲染：
+
+```
+    setState: function setState(state, callback) {
+        let s = this.state;
+        if (!this.prevState) this.prevState = extend({}, s);
+        extend(s, typeof state === 'function' ? state(s, this.props) : state);
+        if (callback)(this._renderCallbacks = this._renderCallbacks || []).push(callback);
+        enqueueRender(this);
+    },
+
+    function enqueueRender(component) {
+		// component._dirty为false且items原本为空数组就能渲染
+		if (!component._dirty && (component._dirty = true) && items.push(component) == 1) {
+			(options.debounceRendering || defer)(rerender); //异步的执行render，要执行render方法的component中的_dirty设为true
+		}
+	},
+
+    function rerender() {
+		let p,
+			list = items;
+		items = [];
+		while (p = list.pop()) {
+			if (p._dirty) renderComponent(p);
+		}
+	}
+```
 
 
-a  d   e
-                b   a   d   e       b   e   a   d
-b  e   a
+
+
+
 
 
 

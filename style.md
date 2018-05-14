@@ -53,3 +53,30 @@ react中所有的事件是挂载的document上的，这样做的好处有：
 ## react中的diff ##
 
 key是一个新旧节点的标识，lastIndex表示访问过的节点在老集合中最右的位置（即最大位置），遍历虚拟dom节点，找到老的dom树对应的节点，比较该dom节点的mountIndex与当前lastIndex，if(mountIndex > lastIndex)，即此时不动该节点不会影响其他节点，所以不做任何操作，否则移动该dom节点。
+
+### react的diffChildren算法 ###
+
+a   b   c    d
+
+b   e    d   c
+
+遍历新的虚拟dom节点，找到对应的老的虚拟dom节点，此时lastIndex为0，所以不做任何操作，遍历到新的虚拟dom节点a，找到老的虚拟dom节点a，此时mountIndex < lastIndex,所以将a移动到b的后面。如果遇到新增的节点直接新增，最后删除那些没有被标记的节点。
+
+
+
+### vue的diffChildren算法 ###
+
+- 头部相同，尾部相同
+- 头部与尾部相同
+- 新增节点
+- 需要删除的节点
+- 其他节点： 3  4  5  6  7
+
+a b f  g
+                b   f   g     b   a   f   g     b  a  g
+b a g  f
+
+
+a  d   e
+                b   a   d   e       b   e   a   d
+b  e   a
